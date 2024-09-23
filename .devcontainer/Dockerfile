@@ -13,9 +13,17 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     tree
 
 
-# Install the stable version of Go
-RUN wget https://go.dev/dl/go1.20.6.linux-arm64.tar.gz && \
-    tar -C /usr/local -xzf go1.20.6.linux-arm64.tar.gz
+# Detect architecture and download the appropriate Go binary
+RUN ARCH=$(uname -m) && \
+    if [ "$ARCH" = "x86_64" ]; then \
+        wget https://go.dev/dl/go1.20.6.linux-amd64.tar.gz; \
+    elif [ "$ARCH" = "aarch64" ]; then \
+        wget https://go.dev/dl/go1.20.6.linux-arm64.tar.gz; \
+    else \
+        echo "Unsupported architecture: $ARCH"; exit 1; \
+    fi && \
+    tar -C /usr/local -xzf go1.20.6.linux-*.tar.gz && \
+    rm go1.20.6.linux-*.tar.gz
 
 # Set Go environment variables
 ENV PATH="/usr/local/go/bin:${PATH}"
