@@ -46,21 +46,21 @@ func (c *Config) RunMode(section string) int {
 	comps := strings.Split(section, "/")
 	compLen := len(comps)
 
-	if compLen == 0 || compLen > 3 {
+	if compLen == 0 || compLen > 4 {
 		return RunModeNone
 	}
 
 	keys := []string{comps[0]}
 
-	if compLen > 1 {
-		nums := strings.Split(comps[1], ".")
-		for i, _ := range nums {
-			key := fmt.Sprintf("%s/%s", comps[0], strings.Join(nums[:i+1], "."))
-			keys = append(keys, key)
-		}
-	}
+	for i := 1; i < compLen-1; i++ {
+        nums := strings.Split(comps[i], ".")
+        for j := range nums {
+            key := fmt.Sprintf("%s/%s", strings.Join(comps[:i], "/"), strings.Join(nums[:j+1], "."))
+            keys = append(keys, key)
+        }
+    }
 
-	if compLen > 2 {
+	if compLen > 1 {
 		keys = append(keys, section)
 	}
 
@@ -88,7 +88,7 @@ func (c *Config) buildTargetMap() {
 		compLen := len(comps)
 
 		// Validate the format of the section string.
-		if compLen == 0 || compLen > 3 {
+		if compLen == 0 || compLen > 4 {
 			fmt.Printf("Invalid section: %s", section)
 			continue
 		}
@@ -106,11 +106,13 @@ func (c *Config) buildTargetMap() {
 
 		// The parent group of the test case associated with this section
 		// must only run test cases included in the group.
-		nums := strings.Split(comps[1], ".")
-		for i, _ := range nums {
-			key := fmt.Sprintf("%s/%s", comps[0], strings.Join(nums[:i+1], "."))
-			c.targetMap[key] = false
-		}
+		for i := 1; i < compLen-1; i++ {
+            nums := strings.Split(comps[i], ".")
+            for j := range nums {
+                key := fmt.Sprintf("%s/%s", strings.Join(comps[:i], "/"), strings.Join(nums[:j+1], "."))
+                c.targetMap[key] = false
+            }
+        }
 
 		// The test case associated with this section string must be run.
 		c.targetMap[section] = true
