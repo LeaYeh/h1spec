@@ -32,6 +32,7 @@ func main() {
 	flags.StringP("path", "P", "/", "Target path")
 	flags.IntP("timeout", "o", 2, "Time seconds to test timeout")
 	flags.Int("max-header-length", 4000, "Maximum length of HTTP header")
+	flags.Int("max-body-length", 4000, "Maximum length of HTTP body")
 	flags.BoolP("strict", "S", false, "Run all test cases including strict test cases")
 	flags.Bool("dryrun", false, "Display only the title of test cases")
 	flags.BoolP("verbose", "v", false, "Output verbose log")
@@ -83,6 +84,11 @@ func run(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
+	maxBodyLen, err := flags.GetInt("max-body-length")
+	if err != nil {
+		return err
+	}
+
 	strict, err := flags.GetBool("strict")
 	if err != nil {
 		return err
@@ -103,11 +109,13 @@ func run(cmd *cobra.Command, args []string) error {
 	}
 
 	c := &config.Config{
+		AgentName:   "tester_h1spec_" + VERSION,
 		Host:         host,
 		Port:         port,
 		Path:         path,
 		Timeout:      time.Duration(timeout) * time.Second,
 		MaxHeaderLen: maxHeaderLen,
+		MaxBodyLen:   maxBodyLen,
 		Strict:       strict,
 		DryRun:       dryRun,
 		Verbose:      verbose,

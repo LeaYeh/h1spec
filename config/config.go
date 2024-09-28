@@ -13,11 +13,13 @@ const (
 )
 
 type Config struct {
+	AgentName	 string
 	Host         string
 	Port         int
 	Path         string
 	Timeout      time.Duration
 	MaxHeaderLen int
+	MaxBodyLen   int
 	Strict       bool
 	DryRun       bool
 	Verbose      bool
@@ -28,7 +30,7 @@ type Config struct {
 }
 
 // Addr returns the string concatenated with hostname and port number.
-func (c *Config) Address() string {
+func (c *Config) Addr() string {
 	return fmt.Sprintf("%s:%d", c.Host, c.Port)
 }
 
