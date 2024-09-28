@@ -122,8 +122,6 @@ func run(cmd *cobra.Command, args []string) error {
 		Sections:     args,
 	}
 
-	print(c)
-
 	success, err := h1spec.Run(c)
 	if !success {
 		os.Exit(1)

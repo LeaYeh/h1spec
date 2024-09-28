@@ -14,6 +14,6 @@ This project is highly inspired by [h2spec](https://github.com/summerwind/h2spec
 - `h1spec/cmd/`: The command line interface of h1spec.
 - `h1spec/config/`: The configuration of server and test cases.
 - `h1spec/spec/`: The test cases of RFC 7230, RFC 7231, RFC 7232, RFC 7233, RFC 7234 and RFC 7235.
-- `h1spec/brenchmark/`: The golden standard of the test cases.
+- `h1spec/brenchmark/`: The golden standard of the test cases. The user can use this to comapre the behavior of the servers.
 - `h1spec/log/`: Some utils for logging.
 - `h1spec/experiment/`: Some utils for manual testing.
