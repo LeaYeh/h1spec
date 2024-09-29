@@ -4,7 +4,9 @@
 		"dockerfile": "Dockerfile"
 	},
 	"runArgs": [
-		"--privileged"
+		"--privileged",
+		"--name=h1spec_container",
+		"--network=share_network"
 	],
 	"customizations": {
 		"vscode": {
