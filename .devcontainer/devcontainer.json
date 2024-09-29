@@ -18,6 +18,7 @@
 			]
 		}
 	},
+	"initializeCommand": "touch ${env:HOME}/.ssh ${env:HOME}/.gitconfig ${env:HOME}/.zshrc ${env:HOME}/.some_alias",
 	"mounts": [
 		"source=${env:HOME}/.ssh,target=/root/.ssh,type=bind,consistency=cached",
 		"source=${env:HOME}/.gitconfig,target=/root/.gitconfig,type=bind,consistency=cached",
