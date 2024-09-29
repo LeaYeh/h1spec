@@ -20,6 +20,11 @@ func Spec() *spec.TestGroup {
 
 	// Add the main chapters as test groups
 	tg.AddTestGroup(RFC7230())
+	// tg.AddTestGroup(RFC7231())
+	// tg.AddTestGroup(RFC7232())
+	// tg.AddTestGroup(RFC7233())
+	// tg.AddTestGroup(RFC7234())
+	// tg.AddTestGroup(RFC7235())
 
 	return tg
 }

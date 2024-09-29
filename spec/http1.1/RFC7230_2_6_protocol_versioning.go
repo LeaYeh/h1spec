@@ -5,8 +5,81 @@ import (
 	"github.com/LeaYeh/h1spec/spec"
 )
 
+// func Http11RequestFormat() *spec.TestGroup {
+// }
+
 func Http11ProtocolVersioning() *spec.TestGroup {
 	tg := NewTestGroup("RFC7230.2.6", "HTTP/1.1 Protocol Versioning")
+
+	tg.AddTestCase(&spec.TestCase{
+		Strict:      true,
+		Desc:        "The HTTP-version need to follow the format, HTTP/1 is invalid",
+		Requirement: " HTTP-version  = HTTP-name \"/\" DIGIT \".\" DIGIT",
+		Run: func(c *config.Config, conn *spec.Conn) error {
+			passed := true
+			expected := "HTTP/1.1 400 Bad Request\r"
+
+			request := "GET / HTTP/1\r\n" +
+						"Host: " + c.Host + "\r\n" +
+						"Connection: close\r\n\r\n"
+
+			err := conn.Send([]byte(request))
+			if err != nil {
+				return err
+			}
+			acturl, err := conn.ReadLine()
+			if err != nil {
+				return err
+			}
+
+			if acturl != expected {
+				passed = false
+			}
+
+			if !passed {
+				return &spec.TestError{
+					Expected: []string{expected},
+					Actual:   acturl,
+				}
+			}
+			return nil
+		},
+	})
+
+	tg.AddTestCase(&spec.TestCase{
+		Strict:      true,
+		Desc:        "The HTTP-name is case-insensitive, http is not a valid HTTP-name",
+		Requirement: "HTTP-name     = %x48.54.54.50 ; \"HTTP\", case-sensitive",
+		Run: func(c *config.Config, conn *spec.Conn) error {
+			passed := true
+			expected := "HTTP/1.1 400 Bad Request\r"
+
+			request := "GET / http/1.1\r\n" +
+						"Host: " + c.Host + "\r\n" +
+						"Connection: close\r\n\r\n"
+
+			err := conn.Send([]byte(request))
+			if err != nil {
+				return err
+			}
+			acturl, err := conn.ReadLine()
+			if err != nil {
+				return err
+			}
+
+			if acturl != expected {
+				passed = false
+			}
+
+			if !passed {
+				return &spec.TestError{
+					Expected: []string{expected},
+					Actual:   acturl,
+				}
+			}
+			return nil
+		},
+	})
 
 	tg.AddTestCase(&spec.TestCase{
 		Strict:      true,
