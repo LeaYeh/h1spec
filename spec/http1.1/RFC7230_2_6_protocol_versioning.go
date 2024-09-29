@@ -5,14 +5,11 @@ import (
 	"github.com/LeaYeh/h1spec/spec"
 )
 
-// func Http11RequestFormat() *spec.TestGroup {
-// }
-
 func Http11ProtocolVersioning() *spec.TestGroup {
 	tg := NewTestGroup("RFC7230.2.6", "HTTP/1.1 Protocol Versioning")
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The HTTP-version need to follow the format, HTTP/1 is invalid",
 		Requirement: " HTTP-version  = HTTP-name \"/\" DIGIT \".\" DIGIT",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -47,7 +44,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The HTTP-name is case-insensitive, http is not a valid HTTP-name",
 		Requirement: "HTTP-name     = %x48.54.54.50 ; \"HTTP\", case-sensitive",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -82,7 +79,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/1.1 should work normally",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -187,7 +184,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/2.0 should behave as if it was HTTP/1.1",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -223,7 +220,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/3.0 should behave as if it was HTTP/1.1",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -259,7 +256,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The request for HTTP/-1.1 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -292,7 +289,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The request for HTTP/0.0 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -324,7 +321,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The request for HTTP/0.2 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
@@ -356,7 +353,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 	})
 
 	tg.AddTestCase(&spec.TestCase{
-		Strict:      true,
+		Strict:      false,
 		Desc:        "The request for HTTP/4.2 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
