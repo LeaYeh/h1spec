@@ -167,7 +167,7 @@ func (conn *Conn) ReadLine() (string, error) {
 	return buffer.String(), nil
 }
 
-func (conn *Conn) readBytes(size int) ([]byte, error) {
+func (conn *Conn) ReadBytes(size int) ([]byte, error) {
 	var remain = size
 	buffer := make([]byte, 0, size)
 

@@ -13,8 +13,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "The HTTP-version need to follow the format, HTTP/1 is invalid",
 		Requirement: " HTTP-version  = HTTP-name \"/\" DIGIT \".\" DIGIT",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 400 Bad Request\r"
+			expected := []string{spec.StatusString(1.1, 400, "\r")}
 
 			request := "GET / HTTP/1\r\n" +
 						"Host: " + c.Host + "\r\n" +
@@ -29,13 +28,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -48,8 +43,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "The HTTP-name is case-insensitive, http is not a valid HTTP-name",
 		Requirement: "HTTP-name     = %x48.54.54.50 ; \"HTTP\", case-sensitive",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 400 Bad Request\r"
+			expected := []string{spec.StatusString(1.1, 400, "\r")}
 
 			request := "GET / http/1.1\r\n" +
 						"Host: " + c.Host + "\r\n" +
@@ -64,13 +58,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -83,8 +73,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/1.1 should work normally",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 200 OK\r"
+			expected := []string{spec.StatusString(1.1, 200, "\r")}
 
 			request := "GET / HTTP/1.1\r\n" +
 						"Host: " + c.Host + "\r\n" +
@@ -99,13 +88,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -152,8 +137,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/1.2 should behave as if it was HTTP/1.1",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 200 OK\r"
+			expected := []string{spec.StatusString(1.1, 200, "\r")}
 
 			request := "GET / HTTP/1.2\r\n" +
 						  "Host: " + c.Host + "\r\n" +
@@ -169,13 +153,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -188,8 +168,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/2.0 should behave as if it was HTTP/1.1",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 505 HTTP Version Not Supported\r"
+			expected := []string{spec.StatusString(1.1, 505, "\r")}
 
 			request := "GET / HTTP/2.0\r\n" +
                    "Host: " + c.Host + "\r\n" +
@@ -205,13 +184,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -224,8 +199,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "Assuming the server supports HTTP/1.1 only, request for HTTP/3.0 should behave as if it was HTTP/1.1",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 505 HTTP Version Not Supported\r"
+			expected := []string{spec.StatusString(1.1, 505, "\r")}
 
 			request := "GET / HTTP/3.0\r\n" +
                    "Host: " + c.Host + "\r\n" +
@@ -241,13 +215,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -260,8 +230,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "The request for HTTP/-1.1 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 400 Bad Request\r"
+			expected := []string{spec.StatusString(1.1, 400, "\r")}
 
 			request := "GET / HTTP/-1.1\r\n"
 			err := conn.Send([]byte(request))
@@ -273,13 +242,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -293,8 +258,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "The request for HTTP/0.0 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 400 Bad Request\r"
+			expected := []string{spec.StatusString(1.1, 400, "\r")}
 
 			request := "GET / HTTP/0.0\r\n"
 			err := conn.Send([]byte(request))
@@ -306,13 +270,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -326,7 +286,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
 			passed := true
-			expected := "HTTP/1.1 400 Bad Request\r"
+			expected := []string{spec.StatusString(1.1, 400, "\r")}
 
 			request := "GET / HTTP/0.2\r\n"
 			err := conn.Send([]byte(request))
@@ -338,13 +298,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
 			if !passed {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
@@ -357,8 +313,7 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 		Desc:        "The request for HTTP/4.2 is invalid",
 		Requirement: "A server MUST NOT send a version to which it is not conformant. A server can send a 505.",
 		Run: func(c *config.Config, conn *spec.Conn) error {
-			passed := true
-			expected := "HTTP/1.1 505 HTTP Version Not Supported\r"
+			expected := []string{spec.StatusString(1.1, 505, "\r")}
 
 			request := "GET / HTTP/4.2\r\n\r\n"
 
@@ -371,13 +326,9 @@ func Http11ProtocolVersioning() *spec.TestGroup {
 				return err
 			}
 
-			if acturl != expected {
-				passed = false
-			}
-
-			if !passed {
+			if !spec.FindInSlice(expected, acturl) {
 				return &spec.TestError{
-					Expected: []string{expected},
+					Expected: expected,
 					Actual:   acturl,
 				}
 			}
