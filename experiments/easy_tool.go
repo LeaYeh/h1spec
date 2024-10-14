@@ -1,13 +1,14 @@
 package main
 
 import (
-    "fmt"
-    "net"
-    "bufio"
+	"bufio"
+	"fmt"
+	"net"
 )
 
 func main() {
-    conn, err := net.Dial("tcp", "iana.org:443")
+    conn, err := net.Dial("tcp", "webserv_container:4000")
+    // conn, err := net.Dial("tcp", "webserv_container:8080")
     if err != nil {
         fmt.Println("Error connecting:", err)
         return
@@ -15,9 +16,20 @@ func main() {
     defer conn.Close()
 
     requestLine := "GET / HTTP/1.1\r\n"
-    headers := ""
-    // headers += "Host: iana.org\r\n\r\n"
-    headers += "Connection: close\r\n\r\n"
+    headers := "" +
+                "Host: webserv_container\r\n" +
+                "Connection: Close\r\n" +
+                "\r\n"
+
+    // requestLine := "POST /upload/file2 HTTP/1.1\r\n"
+    // headers := "Host: webserv_container\r\n" +
+    //            "Connection: Close\r\n" +
+    //            "Content-Type: text/plain\r\n" +
+    //            "Content-Length: %d\r\n" + // Placeholder for the body length
+    //             "\r\n"
+
+    // body := "This is the body of the request"
+    // headers = fmt.Sprintf(headers, len(body)) + body + "\r\n"
 
     httpRequest := requestLine + headers
     fmt.Println(httpRequest)
