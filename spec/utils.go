@@ -47,7 +47,7 @@ var statusReasonMap = map[int]string{
 	http.StatusLengthRequired:              "Length Required",
 	http.StatusPreconditionFailed:          "Precondition Failed",
 	http.StatusRequestEntityTooLarge:       "Payload Too Large",
-	http.StatusRequestURITooLong:           "URI Too Long",
+	http.StatusRequestURITooLong:           "Request-URI Too Large",
 	http.StatusUnsupportedMediaType:        "Unsupported Media Type",
 	http.StatusRequestedRangeNotSatisfiable:"Range Not Satisfiable",
 	http.StatusExpectationFailed:           "Expectation Failed",
