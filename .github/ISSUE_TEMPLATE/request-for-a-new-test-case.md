@@ -1,28 +1,20 @@
 ---
 name: Request for a new test case
 about: Describe this issue template's purpose here.
-title: "[FEAT]"
+title: "[FEAT] Request for a New Test Case - <CASE_NAME>"
 labels: enhancement
-assignees: ''
+assignees: LeaYeh
 
 ---
 
 ## Request for a New Test Case
-
-### Summary
-Provide a concise summary of the test case you want to request.
-
----
 
 ### Test Case Details
 
 1. **Test Case Name**:
    * _Enter a descriptive name for the test case._
 
-2. **Description**:
-   * _Briefly describe the purpose of the test case._
-
-3. **Expected Behavior**:
+2. **Expected Behavior**:
    * _Clearly specify what the web server should do under this test case._
 
 ---
