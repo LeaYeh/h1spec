@@ -7,38 +7,107 @@ assignees: LeaYeh
 
 ---
 
-## Request for a New Test Case
+name: HTTP/1.1 Test Case
+description: Create a new HTTP/1.1 test case
+title: "[Test Case]: "
+labels: ["test-case", "http1.1"]
+assignees:
+  - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to create a new test case! Please fill out the information below.
 
-### Test Case Details
+  - type: input
+    id: rfc-document
+    attributes:
+      label: RFC Document
+      description: Which RFC document is this test case based on?
+      placeholder: e.g., RFC 7230
+    validations:
+      required: true
 
-1. **Test Case Name**:
-   * _Enter a descriptive name for the test case._
+  - type: input
+    id: rfc-section
+    attributes:
+      label: RFC Section
+      description: Which section of the RFC is this test case related to?
+      placeholder: e.g., Section 3.3.2
+    validations:
+      required: true
 
-2. **Expected Behavior**:
-   * _Clearly specify what the web server should do under this test case._
+  - type: input
+    id: rfc-link
+    attributes:
+      label: RFC Link
+      description: Provide a link to the relevant RFC section, if available.
+      placeholder: https://tools.ietf.org/html/rfc7230#section-3.3.2
 
----
+  - type: textarea
+    id: test-case-name
+    attributes:
+      label: Test Case Name
+      description: Enter a concise name for the test case
+      placeholder: e.g., Invalid HTTP Version Format
+    validations:
+      required: true
 
-### Sample Test Request
+  - type: textarea
+    id: test-case-description
+    attributes:
+      label: Test Case Description
+      description: Briefly describe the test case
+      placeholder: This test case verifies the server's response to an invalid HTTP version format in the request line.
+    validations:
+      required: true
 
-Provide a sample HTTP request that represents this test case:
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Select the compliance level for this test case
+      options:
+        - MUST
+        - SHOULD
+        - MAY
+    validations:
+      required: true
 
-```http
-<Insert example HTTP request here>
-```
+  - type: textarea
+    id: sample-request
+    attributes:
+      label: Sample Request
+      description: Provide the HTTP request for this test case
+      placeholder: |
+        GET / HTTP/1.0
+        Host: example.com
+      render: http
+    validations:
+      required: true
 
-### Expected Response
+  - type: input
+    id: expected-status-code
+    attributes:
+      label: Expected Status Code
+      description: What is the expected HTTP status code in the response?
+      placeholder: e.g., 400
+    validations:
+      required: true
 
-Provide the expected HTTP response for the test case:
+  - type: textarea
+    id: expected-headers
+    attributes:
+      label: Expected Headers
+      description: List any specific headers expected in the response
+      placeholder: |
+        Content-Type: text/plain
+        Connection: close
 
-```http
-<Insert expected HTTP response here>
-```
-
----
-
-### RFC Reference
-
-1. **RFC Document**: _e.g., RFC 7230_
-2. **Section**: _e.g., Section 3.3.2_
-3. **Link**: _Provide a link to the relevant RFC section, if available._
+  - type: textarea
+    id: expected-body
+    attributes:
+      label: Expected Body
+      description: Describe the expected body in the response, if any
+      placeholder: The response body should contain an error message indicating an invalid HTTP version.
+  
