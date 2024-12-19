@@ -1,15 +1,9 @@
----
-name: Request for a new test case
-title: "[FEAT] Request for a New Test Case - <CASE_NAME>"
-labels: enhancement
-assignees: LeaYeh
-
----
-
 name: HTTP/1.1 Test Case
 description: Create a new HTTP/1.1 test case
 title: "[Test Case]: "
-labels: ["test-case", "http1.1"]
+labels: 
+  - test-case
+  - http1.1
 assignees:
   - octocat
 
@@ -82,7 +76,6 @@ body:
       placeholder: |
         GET / HTTP/1.0
         Host: example.com
-      render: http
     validations:
       required: true
 
@@ -109,5 +102,4 @@ body:
     attributes:
       label: Expected Body
       description: Describe the expected body in the response, if any
-      placeholder: The response body should contain an error message indicating an invalid HTTP version.
-  
+      placeholder: The response body should contain an error message
