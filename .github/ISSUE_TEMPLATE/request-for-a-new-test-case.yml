@@ -1,6 +1,5 @@
 ---
 name: Request for a new test case
-about: Describe this issue template's purpose here.
 title: "[FEAT] Request for a New Test Case - <CASE_NAME>"
 labels: enhancement
 assignees: LeaYeh
