@@ -189,18 +189,26 @@ jobs:
     - run: |
         echo "Full generated code:"
         echo "----------------------------------------"
-        echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
+        echo '${{ steps.generate.outputs.result }}' | sed 's/./\\&/g'
         echo "----------------------------------------"
         
-        # 移除引號和轉義字符，並解碼 \n 為實際的換行
-        CLEANED_CODE=$(echo '${{ steps.generate.outputs.result }}' | sed 's/^"//; s/"$//; s/\\n/\n/g; s/\\t/\t/g; s/\\"/"/g')
+        # 將生成的代碼寫入文件，避免 shell 解釋
+        echo '${{ steps.generate.outputs.result }}' > raw_code.txt
         
+        # 移除可能的 Markdown 代碼塊標記和其他非 Go 代碼內容
+        sed -n '/^```go$/,/^```$/p' raw_code.txt | sed '1d;$d' > cleaned_code.txt
+        
+        echo "Raw generated code:"
+        echo "----------------------------------------"
+        cat raw_code.txt
+        echo "----------------------------------------"
+
         echo "Cleaned generated code:"
         echo "----------------------------------------"
-        echo "$CLEANED_CODE"
+        cat cleaned_code.txt
         echo "----------------------------------------"
         
-        echo "$CLEANED_CODE" > temp_test.go
+        mv cleaned_code.txt temp_test.go
         echo "Contents of temp_test.go:"
         cat temp_test.go
         
@@ -214,8 +222,10 @@ jobs:
           exit 1
         fi
         
-        ESCAPED_CODE=$(echo "$CLEANED_CODE" | awk '{printf "%s\\n", $0}')
-        echo "cleaned_code=$ESCAPED_CODE" >> $GITHUB_OUTPUT
+        ESCAPED_CODE=$(cat temp_test.go | awk '{printf "%s\\n", $0}')
+        echo "cleaned_code<<EOF" >> $GITHUB_OUTPUT
+        echo "$ESCAPED_CODE" >> $GITHUB_OUTPUT
+        echo "EOF" >> $GITHUB_OUTPUT
 
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
