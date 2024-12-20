@@ -150,22 +150,12 @@ jobs:
             req.end();
           });
 
-    - name: Save API response
-      run: |
-        echo '${{ fromJson(steps.generate.outputs.result).full_response }}' > api_response.json
-        
-    - name: Upload API response as artifact
-      uses: actions/upload-artifact@v3
-      with:
-        name: api-response
-        path: api_response.json
-
     - name: Validate and format generated code
       id: validate
       uses: actions/setup-go@v2
       with:
         go-version: '1.20'
-    - run: |
+      run: |
         echo "ChatGPT Response ID: ${{ fromJson(steps.generate.outputs.result).id }}"
         echo "ChatGPT Object: ${{ fromJson(steps.generate.outputs.result).object }}"
         echo "ChatGPT Created Timestamp: ${{ fromJson(steps.generate.outputs.result).created }}"
