@@ -1,0 +1,75 @@
+# RFC Major Chapter Test Group Prompt
+
+You are an expert in HTTP/1.1 test case development. Your task is to create or extend a **major chapter test group** for the `h1spec` project, based on the provided RFC document.  
+
+## Inputs:
+- **RFC Document**: RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_{{SUBSECTION}}
+- **RFC Link**: {{RFC_LINK}}
+- **Test Case Name**: {{TEST_CASE_NAME}}
+- **Project Context**:  
+{{REFERENCE_CODE}}
+
+## Task Instructions:
+1. **If `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}.go` does not exist**, create a new test group file using the provided format. Use the example code structure for guidance and ensure that:
+   - The file is properly named based on the chapter (e.g., `RFC7230_2.go` for Chapter 2 of RFC7230).
+   - You add subchapter-level test groups if applicable.
+   - Include relevant imports and comments.
+2. **If `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}.go` already exists**, extend the file by adding a new subchapter-level test group or extending existing ones based on the target **Test Case Name** (e.g., `tg.AddTestGroup(Http11ErrorHandling())` for error handling). Reference the specific subsection where applicable (e.g., `RFC7230_2_5`).
+
+## Requirements:
+- Use the project's **naming conventions** and **coding style**.
+- Leverage existing **utility functions** and **structures** in the `h1spec` project.
+- Provide **clear and structured documentation** to describe the purpose and scope of the test group.
+- Ensure **modularity** by structuring the code to allow for further subchapter-level test groups.
+
+### Example Output Format:
+For a new test group:  
+package http11
+
+import "github.com/LeaYeh/h1spec/spec"
+
+// HTTP11Architecture implements tests for RFC7230 Section 2: "Architecture".
+func HTTP11Architecture() *spec.TestGroup {
+    tg := NewTestGroup("RFC7230.2", "Architecture")
+    tg.AddTestGroup(Http11ErrorHandling()) // Reference from RFC7230_2_5
+    tg.AddTestGroup(Http11ProtocolVersioning()) // Reference from RFC7230_2_6
+    return tg
+}
+
+For extending an existing file:  
+package http11
+
+import "github.com/LeaYeh/h1spec/spec"
+
+// Extended test group for RFC7230 Section 2: "Architecture".
+func HTTP11Architecture() *spec.TestGroup {
+    tg := NewTestGroup("RFC7230.2", "Architecture")
+    tg.AddTestGroup(Http11ErrorHandling()) // New test group for error handling (RFC7230_2_5)
+    return tg
+}
+
+## Notes:
+1. Align the test group and subgroups with the **Test Case Name** (`{{TEST_CASE_NAME}}`) and ensure compatibility with the project structure.
+2. Use subchapter-specific references (e.g., `RFC7230_2_5`) when creating or extending the test groups.
+3. filename should be in the format `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_<CHAPTER_TITLE>.go` (e.g., RFC7230_2_architecture.go).
+
+generate the response in flowing format:
+
+```go
+func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
+	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}", "<CHAPTER_TITLE>")
+
+	tg.AddTestGroup(HTTP11<TEST_CASE_GROUP>())
+    ...
+
+	return tg
+}
+```
+
+```filename
+e.g. RFC7230_2_architecture.go
+```
+
+```test-group
+e.g. HTTP11HeaderHost (format HTTP11<TEST_CASE_GROUP>)
+```

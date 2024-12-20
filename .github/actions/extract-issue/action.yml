@@ -1,0 +1,49 @@
+name: 'Extract Issue Information'
+description: 'Extracts the form data from the issue body'
+inputs:
+  github-token:
+    required: true
+  issue-number:
+    required: true
+outputs:
+  result:
+    description: 'The extracted form data'
+    value: ${{ steps.extract.outputs.result }}
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/github-script@v6
+      id: extract
+      with:
+        github-token: ${{ inputs.github-token }}
+        script: |
+          const issue = await github.rest.issues.get({
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            issue_number: ${{ inputs.issue-number }}
+          });
+
+          function extractField(body, field) {
+            const regex = new RegExp(`### ${field}\\s*([\\s\\S]*?)(?=###|$)`, 'i');
+            const match = body.match(regex);
+            return match ? match[1].trim() : '';
+          }
+
+          const formData = {
+            'rfc-document': extractField(issue.data.body, 'RFC Document'),
+            'rfc-section': extractField(issue.data.body, 'RFC Section'),
+            'rfc-link': extractField(issue.data.body, 'RFC Link'),
+            'test-case-name': extractField(issue.data.body, 'Test Case Name'),
+            'test-case-description': extractField(issue.data.body, 'Test Case Description'),
+            'mode': extractField(issue.data.body, 'Mode'),
+            'sample-request': extractField(issue.data.body, 'Sample Request'),
+            'expected-status-code': extractField(issue.data.body, 'Expected Status Code'),
+            'expected-headers': extractField(issue.data.body, 'Expected Headers'),
+            'expected-body': extractField(issue.data.body, 'Expected Body')
+          };
+
+          return formData;
+    - name: Output extracted data
+      run: |
+        echo '${{ steps.extract.outputs.result }}' | jq .
+      shell: bash

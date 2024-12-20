@@ -1,0 +1,132 @@
+name: Generate Test Case
+on:
+  issues:
+    types: [opened, labeled, edited]
+jobs:
+  generate-test-case:
+    runs-on: ubuntu-latest
+    if: contains(github.event.issue.labels.*.name, 'test-case')
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Check if user is authorized
+      uses: ./.github/actions/check-auth
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        authorized-users: ${{ secrets.AUTHORIZED_USERS }}
+        user-login: ${{ github.event.issue.user.login }}
+
+    - name: Extract issue information
+      uses: ./.github/actions/extract-issue
+      id: extract
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        issue-number: ${{ github.event.issue.number }}
+
+    - name: Extract RFC section
+      uses: ./.github/actions/parse-rfc-section
+      id: parse
+      with:
+        rfc-document: ${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}
+        rfc-section: ${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}
+
+    - name: Check RFC files
+      uses: ./.github/actions/check-rfc-files
+      id: check
+      with:
+        protocol-num: ${{ steps.parse.outputs.protocol-num }}
+        major-section: ${{ steps.parse.outputs.major-section }}
+        subsection: ${{ steps.parse.outputs.subsection }}
+        file-prefix: ${{ steps.parse.outputs.file-prefix }}
+
+    # Generate protocol level if needed
+    - name: Generate protocol level
+      uses: ./.github/actions/generate-code
+      if: steps.check.outputs.rfc-exists == 'false' || steps.check.outputs.chapter-exists == 'false'
+      id: gen-protocol
+      with:
+        openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+        prompt-template: ./.github/prompts/rfc_protocal_test_group_prompt.txt
+        generation-type: 'protocol'
+        model: 'gpt-4'
+        rfc-link: ${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}
+        protocol-num: ${{ steps.parse.outputs.protocol-num }}
+        major-section: ${{ steps.parse.outputs.major-section }}
+        subsection: ${{ steps.parse.outputs.subsection }}
+
+    # Generate chapter level if needed
+    - name: Generate chapter level
+      uses: ./.github/actions/generate-code
+      if: steps.check.outputs.chapter-exists == 'false'
+      id: gen-chapter
+      with:
+        openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+        prompt-template: ./.github/prompts/rfc_chapter_test_group_prompt.txt
+        generation-type: 'chapter'
+        test-case-name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
+        model: 'gpt-4'
+        rfc-link: ${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}
+        protocol-num: ${{ steps.parse.outputs.protocol-num }}
+        major-section: ${{ steps.parse.outputs.major-section }}
+        subsection: ${{ steps.parse.outputs.subsection }}
+
+    - name: Generate subchapter level
+      uses: ./.github/actions/generate-code
+      id: generate
+      with:
+        openai-api-key: ${{ secrets.OPENAI_API_KEY }}
+        prompt-template: ./.github/prompts/rfc_subchapter_test_cases_prompt.txt
+        generation-type: 'subchapter'
+        model: 'gpt-4'
+        rfc-link: ${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}
+        protocol-num: ${{ steps.parse.outputs.protocol-num }}
+        major-section: ${{ steps.parse.outputs.major-section }}
+        subsection: ${{ steps.parse.outputs.subsection }}
+        test-case-name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
+        test-case-description: ${{ fromJson(steps.extract.outputs.result)['test-case-description'] }}
+        mode: ${{ fromJson(steps.extract.outputs.result)['mode'] }}
+        sample-request: ${{ fromJson(steps.extract.outputs.result)['sample-request'] }}
+        expected-status-code: ${{ fromJson(steps.extract.outputs.result)['expected-status-code'] }}
+        expected-headers: ${{ fromJson(steps.extract.outputs.result)['expected-headers'] }}
+        expected-body: ${{ fromJson(steps.extract.outputs.result)['expected-body'] }}
+
+    - name: Verify code
+      uses: ./.github/actions/verify-code
+      id: verify
+
+    - name: Set up tmate session
+      if: failure()
+      uses: mxschmitt/action-tmate@v3
+      timeout-minutes: 5
+
+    - name: Create pull request
+      uses: peter-evans/create-pull-request@v3
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
+        title: "New test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
+        body: |
+          This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
+
+          Test Case Details:
+          - RFC Document: ${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}
+          - RFC Section: ${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}
+          - Test Case Name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
+          - Mode: ${{ fromJson(steps.extract.outputs.result)['mode'] }}
+
+          ChatGPT Generation Details:
+          - Response ID: ${{ fromJson(steps.generate.outputs.result).id }}
+          - Object: ${{ fromJson(steps.generate.outputs.result).object }}
+          - Created Timestamp: ${{ fromJson(steps.generate.outputs.result).created }}
+          - Model Used: ${{ fromJson(steps.generate.outputs.result).model }}
+
+          Compilation Status: ${{ steps.verify.outputs.compile_status == 'success' && '✅ Code compiles successfully' || '❌ Compilation failed' }}
+          ${{ steps.verify.outputs.compile_error && format('```\n{0}\n```', steps.verify.outputs.compile_error) }}
+
+          Generated test case has been added to: `${{ steps.verify.outputs.filepath }}`
+          Please review and adjust as necessary.
+        branch: "test-case-${{ github.event.issue.number }}"
+        base: main
+        reviewers: |
+          ${{ github.repository_owner }}
+          ${{ github.event.issue.user.login }}

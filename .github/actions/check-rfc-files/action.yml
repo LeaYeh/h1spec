@@ -1,0 +1,63 @@
+name: 'Check RFC Files'
+description: 'Check if the RFC files exist'
+inputs:
+  protocol-num:
+    required: true
+  major-section:
+    required: true
+  subsection:
+    required: true
+  file-prefix:
+    required: true
+outputs:
+  rfc-exists:
+    description: 'RFC protocol file exists or not'
+    value: ${{ steps.check.outputs.rfc_exists }}
+  chapter-exists:
+    description: 'Chapter file exists or not'
+    value: ${{ steps.check.outputs.chapter_exists }}
+  subchapter-exists:
+    description: 'Subchapter file exists or not'
+    value: ${{ steps.check.outputs.subchapter_exists }}
+runs:
+  using: 'composite'
+  steps:
+    - id: check
+      shell: bash
+      run: |
+        echo "rfc_exists=false" >> $GITHUB_OUTPUT
+        echo "chapter_exists=false" >> $GITHUB_OUTPUT
+        echo "subchapter_exists=false" >> $GITHUB_OUTPUT
+
+        RFC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}.go"
+        CHAPTER_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}.go"
+        SUBCHAPTER_FILE="spec/http1.1/${{ inputs.file-prefix }}.go"
+
+        if [ -f "$RFC_FILE" ]; then
+          echo "rfc_exists=true" >> $GITHUB_OUTPUT
+          echo "RFC file exists: $RFC_FILE"
+          
+          if [ -f "$CHAPTER_FILE" ]; then
+            echo "chapter_exists=true" >> $GITHUB_OUTPUT
+            echo "Chapter file exists: $CHAPTER_FILE"
+            
+            if [ ! -z "${{ inputs.subsection }}" ] && [ -f "$SUBCHAPTER_FILE" ]; then
+              echo "subchapter_exists=true" >> $GITHUB_OUTPUT
+              echo "Subchapter file exists: $SUBCHAPTER_FILE"
+            else
+              echo "Subchapter file does not exist: $SUBCHAPTER_FILE"
+            fi
+          else
+            echo "Chapter file does not exist: $CHAPTER_FILE"
+          fi
+        else
+          echo "RFC file does not exist: $RFC_FILE"
+        fi
+
+    - id: debug
+      shell: bash
+      run: |
+        echo "Debug Information:"
+        echo "rfc_exists: ${{ steps.check.outputs.rfc_exists }}"
+        echo "chapter_exists: ${{ steps.check.outputs.chapter_exists }}"
+        echo "subchapter_exists: ${{ steps.check.outputs.subchapter_exists }}"

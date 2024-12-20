@@ -1,0 +1,65 @@
+name: 'Parse RFC Section'
+description: 'Parses the RFC document and section into protocol number, major section, subsection, and file prefix'
+inputs:
+  rfc-document:
+    description: 'The RFC document to parse (e.g., "RFC 9112" or "9112")'
+    required: true
+  rfc-section:
+    description: 'The RFC section to parse (e.g., "Section 3.2.1" or "3.2.1")'
+    required: true
+outputs:
+  protocol-num:
+    description: 'Protocol number extracted from RFC document'
+    value: ${{ steps.parse.outputs.protocol_num }}
+  major-section:
+    description: 'Major section number'
+    value: ${{ steps.parse.outputs.major_section }}
+  subsection:
+    description: 'Subsection number'
+    value: ${{ steps.parse.outputs.subsection }}
+  file-prefix:
+    description: 'Generated file prefix'
+    value: ${{ steps.parse.outputs.file_prefix }}
+runs:
+  using: 'composite'
+  steps:
+    - id: parse
+      shell: bash
+      run: |
+        # Parse RFC document to extract numeric part (e.g., "RFC 9112" or "9112")
+        RFC_DOCUMENT="${{ inputs.rfc-document }}"
+        if [[ "$RFC_DOCUMENT" =~ ([0-9]+) ]]; then
+          PROTOCOL_NUM="${BASH_REMATCH[1]}"
+          echo "protocol_num=$PROTOCOL_NUM" >> $GITHUB_OUTPUT
+        else
+          echo "::error::Invalid RFC document format"
+          exit 1
+        fi
+
+        # Parse section to extract numeric hierarchy (e.g., "Section 3.2.1" or "3.2.1")
+        RFC_SECTION="${{ inputs.rfc-section }}"
+        if [[ "$RFC_SECTION" =~ ([0-9]+)\.([0-9]+)(\.([0-9]+))? ]]; then
+          MAJOR_SECTION="${BASH_REMATCH[1]}"
+          SUBSECTION="${BASH_REMATCH[2]}"
+          SUBSUBSECTION="${BASH_REMATCH[4]}"
+
+          echo "major_section=$MAJOR_SECTION" >> $GITHUB_OUTPUT
+          echo "subsection=${SUBSECTION}${SUBSUBSECTION:+.$SUBSUBSECTION}" >> $GITHUB_OUTPUT
+        else
+          echo "::error::Invalid RFC section format"
+          exit 1
+        fi
+
+        # Create file prefix (e.g., "RFC9112_3_2_1")
+        FILE_PREFIX="RFC${PROTOCOL_NUM}_${MAJOR_SECTION}_${SUBSECTION}"
+        if [ -n "$SUBSUBSECTION" ]; then
+          FILE_PREFIX="${FILE_PREFIX}_${SUBSUBSECTION}"
+        fi
+        echo "file_prefix=$FILE_PREFIX" >> $GITHUB_OUTPUT
+    - id: debug
+      shell: bash
+      run: |
+        echo "Protocol number: ${{ steps.parse.outputs.protocol_num }}"
+        echo "Major section: ${{ steps.parse.outputs.major_section }}"
+        echo "Subsection: ${{ steps.parse.outputs.subsection }}"
+        echo "File prefix: ${{ steps.parse.outputs.file_prefix }}"

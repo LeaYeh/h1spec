@@ -1,0 +1,20 @@
+name: 'Check Authorized User'
+description: 'Verifies if the user is authorized to trigger the workflow'
+inputs:
+  github-token:
+    required: true
+  authorized-users:
+    required: true
+  user-login:
+    required: true
+runs:
+  using: 'composite'
+  steps:
+    - name: Check authorized user
+      shell: bash
+      run: |
+        if [[ ! ${{ inputs.authorized-users }} =~ ${{ inputs.user-login }} ]]; then
+          echo "User ${{ inputs.user-login }} is not authorized"
+          exit 1
+        fi
+        echo "User ${{ inputs.user-login }} is authorized"

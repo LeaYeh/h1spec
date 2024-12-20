@@ -1,0 +1,267 @@
+name: 'Generate Test Case Code'
+description: 'Generate test case code using OpenAI API'
+inputs:
+  openai-api-key:
+    required: true
+  prompt-template:
+    required: true
+  generation-type:
+    description: 'The type of generation to perform'
+    required: true
+  rfc-link:
+    description: 'RFC link to parse'
+    required: true
+  mode:
+    description: 'Mode of the test case'
+    required: false
+  test-case-name:
+    description: 'Name of the test case'
+    required: false
+  test-case-description:
+    description: 'Description of the test case'
+    required: false
+  sample-request:
+    description: 'Sample request for the test case'
+    required: false
+  expected-status-code:
+    description: 'Expected status code for the test case'
+    required: false
+  expected-headers:
+    description: 'Expected header for the test case'
+    required: false
+  expected-body:
+    description: 'Expected body for the test case'
+    required: false
+  model:
+    description: 'The model to use for generation'
+    required: false
+    default: 'gpt-4'
+  protocol-num:
+    description: 'RFC protocol number'
+    required: false
+  major-section:
+    description: 'RFC major section number'
+    required: false
+  subsection:
+    description: 'RFC subsection number'
+    required: false
+  parent-test-group:
+    description: 'Parent test group'
+    required: false
+outputs:
+  filepath:
+    description: 'Generated code file path'
+    value: ${{ steps.format.outputs.filename }}
+  generated_test_group:
+    description: 'Generated test group'
+    value: ${{ steps.generate.outputs.result }}
+runs:
+  using: 'composite'
+  steps:
+    - name: Set reference code path
+      id: set_reference
+      shell: bash
+      run: |
+        set -x
+        mkdir -p spec/http1.1
+
+        case "${{ inputs.generation-type }}" in
+          "protocol")
+            SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}.go"
+            DEFAULT_FILE="spec/http1.1/RFC7230.go"
+            ;;
+          "chapter")
+            SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}.go"
+            DEFAULT_FILE="spec/http1.1/RFC7230_2.go"
+            ;;
+          "subchapter")
+            if [ ! -z "${{ inputs.subsection }}" ]; then
+              SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}_${{ inputs.subsection }}.go"
+            else
+              SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}.go"
+            fi
+            DEFAULT_FILE="spec/http1.1/RFC7230_2_5.go"
+            ;;
+        esac
+
+        if [ -f "$SPECIFIC_FILE" ]; then
+          echo "reference_path=$SPECIFIC_FILE" >> $GITHUB_OUTPUT
+          echo "Using specific reference file: $SPECIFIC_FILE"
+        else
+          echo "reference_path=$DEFAULT_FILE" >> $GITHUB_OUTPUT
+          echo "Using default reference file: $DEFAULT_FILE"
+        fi
+
+    - name: Render prompt and call OpenAI API
+      uses: actions/github-script@v6
+      id: generate
+      env:
+        OPENAI_API_KEY: ${{ inputs.openai-api-key }}
+        PROMPT_TEMPLATE_PATH: ${{ inputs.prompt-template }}
+        MODEL: ${{ inputs.model }}
+        REFERENCE_CODE_PATH: ${{ steps.set_reference.outputs.reference_path }}
+        RFC_LINK: ${{ inputs.rfc-link }}
+        PROTOCOL_NUM: ${{ inputs.protocol-num }}
+        MAJOR_SECTION: ${{ inputs.major-section }}
+        SUBSECTION: ${{ inputs.subsection }}
+        MODE: ${{ inputs.mode }}
+        TEST_CASE_NAME: ${{ inputs.test-case-name }}
+        TEST_CASE_DESCRIPTION: ${{ inputs.test-case-description }}
+        SAMPLE_REQUEST: ${{ inputs.sample-request }}
+        EXPECTED_STATUS_CODE: ${{ inputs.expected-status-code }}
+        EXPECTED_HEADERS: ${{ inputs.expected-headers }}
+        EXPECTED_BODY: ${{ inputs.expected-body }}
+        GENERATION_TYPE: ${{ inputs.generation-type }}
+        PARENT_TEST_GROUP: ${{ inputs.parent-test-group }}
+      with:
+        script: |
+          const fs = require('fs');
+          const https = require('https');
+
+          let promptTemplate = '';
+          try {
+            promptTemplate = fs.readFileSync(process.env.PROMPT_TEMPLATE_PATH, 'utf8');
+            console.log('Successfully loaded prompt template');
+          } catch (error) {
+            console.error('Error loading prompt template:', error);
+            throw error;
+          }
+
+          let referenceCode = '';
+          try {
+            if (process.env.REFERENCE_CODE_PATH && fs.existsSync(process.env.REFERENCE_CODE_PATH)) {
+              referenceCode = fs.readFileSync(process.env.REFERENCE_CODE_PATH, 'utf8');
+              console.log("Successfully loaded reference code from:", process.env.REFERENCE_CODE_PATH);
+            } else {
+              console.log("Reference code file not found:", process.env.REFERENCE_CODE_PATH);
+            }
+          } catch (error) {
+            console.error('Error loading reference code:', error);
+          }
+
+          const contextData = {
+            RFC_LINK: process.env.RFC_LINK,
+            PROTOCOL_NUM: process.env.PROTOCOL_NUM,
+            MAJOR_SECTION: process.env.MAJOR_SECTION,
+            SUBSECTION: process.env.SUBSECTION,
+            REFERENCE_CODE: referenceCode,
+            MODE: process.env.MODE,
+            TEST_CASE_NAME: process.env.TEST_CASE_NAME,
+            TEST_CASE_DESCRIPTION: process.env.TEST_CASE_DESCRIPTION,
+            SAMPLE_REQUEST: process.env.SAMPLE_REQUEST,
+            EXPECTED_STATUS_CODE: process.env.EXPECTED_STATUS_CODE,
+            EXPECTED_HEADERS: process.env.EXPECTED_HEADERS,
+            EXPECTED_BODY: process.env.EXPECTED_BODY,
+            GENERATION_TYPE: process.env.GENERATION_TYPE,
+            PARENT_TEST_GROUP: process.env.PARENT_TEST_GROUP
+          };
+
+          const prompt = promptTemplate.replace(/\{\{(.+?)\}\}/g, (match, key) => {
+            const value = contextData[key.trim()];
+            return value !== undefined ? value : match;
+          });
+
+          console.log("Generated prompt:", prompt);
+
+          const data = JSON.stringify({
+            model: process.env.MODEL,
+            messages: [{"role": "user", "content": prompt}],
+          });
+
+          const options = {
+            hostname: 'api.openai.com',
+            port: 443,
+            path: '/v1/chat/completions',
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': "Bearer " + process.env.OPENAI_API_KEY,
+              'Content-Length': data.length
+            }
+          };
+
+          return await new Promise((resolve, reject) => {
+            const req = https.request(options, (res) => {
+              let responseBody = '';
+
+              res.on('data', (chunk) => {
+                responseBody += chunk;
+              });
+
+              res.on('end', () => {
+                try {
+                  console.log("Debug: Full OpenAI API response");
+                  console.log(responseBody);
+
+                  const response = JSON.parse(responseBody);
+                  if (response.error) {
+                    console.error("API Error:", response.error);
+                    reject(new Error(response.error.message));
+                  } else {
+                    const result = {
+                      id: response.id,
+                      object: response.object,
+                      created: response.created,
+                      model: response.model,
+                      content: response.choices[0].message.content
+                    };
+                    console.log("Parsed response:", JSON.stringify(result, null, 2));
+                    resolve(result);
+                  }
+                } catch (error) {
+                  console.error("Error parsing response:", error);
+                  reject(error);
+                }
+              });
+            });
+
+            req.on('error', (error) => {
+              console.error("Error:", error);
+              reject(error);
+            });
+
+            req.write(data);
+            req.end();
+          });
+
+    - name: Format generated code
+      id: format
+      shell: bash
+      env:
+        RESPONSE_CONTENT: ${{ fromJson(steps.generate.outputs.result).content }}
+      run: |
+        set -x
+
+        echo "$RESPONSE_CONTENT" > raw_code.txt
+
+        echo "Raw code file contents:"
+        cat raw_code.txt
+
+        if ! grep -q '```go' raw_code.txt || ! grep -q '```filename' raw_code.txt; then
+          echo "Error: Invalid response format"
+          echo "Response content:"
+          cat raw_code.txt
+          exit 1
+        fi
+
+        FILENAME=$(grep -A1 '```filename' raw_code.txt | tail -n1 | tr -d '\r' | tr -d ' ')
+        if [ -z "$FILENAME" ]; then
+          echo "Error: Could not extract filename"
+          exit 1
+        fi
+        echo "Extracted filename: $FILENAME"
+        echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+
+        sed -n '/```go/,/```/{/```/!p}' raw_code.txt > cleaned_code.txt
+        if [ ! -s cleaned_code.txt ]; then
+          echo "Error: No code content found"
+          exit 1
+        fi
+
+        echo "Cleaned code contents:"
+        cat cleaned_code.txt
+
+        mv cleaned_code.txt "spec/http1.1/$FILENAME"
+        echo "Generated file: spec/http1.1/$FILENAME"
+        echo "Final file contents:"
+        cat "spec/http1.1/$FILENAME"

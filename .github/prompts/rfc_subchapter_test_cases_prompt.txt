@@ -1,0 +1,85 @@
+# rfc_subchapter_test_cases_prompt.txt
+You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
+
+Test Case Details:
+RFC Document: RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_{{SUBSECTION}}
+RFC Link: {{RFC_LINK}}
+Test Case Name: {{TEST_CASE_NAME}}
+Test Case Description: {{TEST_CASE_DESCRIPTION}}
+Mode: {{MODE}}
+Sample Request:
+{{SAMPLE_REQUEST}}
+Expected Status Code: {{EXPECTED_STATUS_CODE}}
+Expected Headers:
+{{EXPECTED_HEADERS}}
+Expected Body:
+{{EXPECTED_BODY}}
+
+Project Context:
+```go
+{{REFERENCE_CODE}}
+```
+
+Based on the provided information, please generate a Go test function that implements the described test case. The test function should adhere to the following guidelines:
+
+1. Use the test group name from the previous answeer if it is not exist or base one the current `Project Context` to extern it.
+2. Be placed in the appropriate file within the spec/http1.1 directory, likely RFC7230.go or a new file if necessary.
+3. Use the existing utility functions and structures from the project where applicable.
+4. Implement the test case as described, including the sample request, expected status code, headers, and body.
+5. Include appropriate comments explaining the test case and its expected behavior.
+6. Use the provided Mode (MUST, SHOULD, MAY) to determine the severity of the test.
+
+Please adhere to the following specific requirements:
+- Name the test function using the format 'TestXXXX' where XXXX describes the specific test case.
+- Use the 'tg.AddTestCase(&spec.TestCase{...})' structure to add the test case.
+- Include all necessary import statements at the beginning of the file.
+- Provide a comment for each main step in the test function.
+- Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
+- Return a 'spec.TestError' for any test failures.
+- Ensure that the test case accurately reflects the provided Test Case Details, including the specific RFC requirements, expected status codes, headers, and body.
+- generate source code in plain text ONLY
+
+Here's a basic structure to follow:
+
+```go
+package http11
+
+import (
+    'github.com/LeaYeh/h1spec/config'
+    'github.com/LeaYeh/h1spec/spec'
+)
+
+func Http11YourTestGroup() *spec.TestGroup {
+    tg := NewTestGroup('RFC7230.X.X', 'Your Test Group Name')
+
+    tg.AddTestCase(&spec.TestCase{
+        Strict:      true, // or false, based on the Mode
+        Desc:        'Your test case description',
+        Requirement: 'The specific requirement from the RFC',
+        Run: func(c *config.Config, conn *spec.Conn) error {
+            // Your test implementation here
+            // ...
+
+            return nil // or return &spec.TestError{...} if the test fails
+        },
+    })
+
+    return tg
+}
+
+generate the response in flowing format:
+
+```go
+func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
+	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}"."{{SUBSECTION}}", "<TEST_CASE_NAME>")
+
+	tg.AddTestCase(&spec.TestCase{
+        ...
+    })
+	return tg
+}
+```
+
+```filename
+e.g. RFC7230_2_5_error_handling.go
+```
