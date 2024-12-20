@@ -25,23 +25,28 @@ jobs:
           
           console.log('Issue body:', issue.data.body);
           
-          // 直接從 issue body 提取結構化數據
-          const formData = JSON.parse(issue.data.body);
+          function extractField(body, field) {
+            const regex = new RegExp(`### ${field}\\s*([\\s\\S]*?)(?=###|$)`, 'i');
+            const match = body.match(regex);
+            return match ? match[1].trim() : '';
+          }
           
-          console.log('Parsed form data:', JSON.stringify(formData, null, 2));
-          
-          return {
-            rfcDocument: formData['rfc-document'],
-            rfcSection: formData['rfc-section'],
-            rfcLink: formData['rfc-link'],
-            testCaseName: formData['test-case-name'],
-            testCaseDescription: formData['test-case-description'],
-            mode: formData['mode'],
-            sampleRequest: formData['sample-request'],
-            expectedStatusCode: formData['expected-status-code'],
-            expectedHeaders: formData['expected-headers'],
-            expectedBody: formData['expected-body']
+          const formData = {
+            'rfc-document': extractField(issue.data.body, 'RFC Document'),
+            'rfc-section': extractField(issue.data.body, 'RFC Section'),
+            'rfc-link': extractField(issue.data.body, 'RFC Link'),
+            'test-case-name': extractField(issue.data.body, 'Test Case Name'),
+            'test-case-description': extractField(issue.data.body, 'Test Case Description'),
+            'mode': extractField(issue.data.body, 'Mode'),
+            'sample-request': extractField(issue.data.body, 'Sample Request'),
+            'expected-status-code': extractField(issue.data.body, 'Expected Status Code'),
+            'expected-headers': extractField(issue.data.body, 'Expected Headers'),
+            'expected-body': extractField(issue.data.body, 'Expected Body')
           };
+          
+          console.log('Extracted form data:', JSON.stringify(formData, null, 2));
+          
+          return formData;
 
     - name: Prepare prompt
       id: prepare_prompt
@@ -49,19 +54,19 @@ jobs:
         echo 'PROMPT<<EOF' >> $GITHUB_ENV
         echo "You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
         Test Case Details:
-        RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
-        RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
-        RFC Link: ${{ fromJson(steps.extract.outputs.result).rfcLink }}
-        Test Case Name: ${{ fromJson(steps.extract.outputs.result).testCaseName }}
-        Test Case Description: ${{ fromJson(steps.extract.outputs.result).testCaseDescription }}
-        Mode: ${{ fromJson(steps.extract.outputs.result).mode }}
+        RFC Document: ${{ steps.extract.outputs.result['rfc-document'] }}
+        RFC Section: ${{ steps.extract.outputs.result['rfc-section'] }}
+        RFC Link: ${{ steps.extract.outputs.result['rfc-link'] }}
+        Test Case Name: ${{ steps.extract.outputs.result['test-case-name'] }}
+        Test Case Description: ${{ steps.extract.outputs.result['test-case-description'] }}
+        Mode: ${{ steps.extract.outputs.result['mode'] }}
         Sample Request:
-        ${{ fromJson(steps.extract.outputs.result).sampleRequest }}
-        Expected Status Code: ${{ fromJson(steps.extract.outputs.result).expectedStatusCode }}
+        ${{ steps.extract.outputs.result['sample-request'] }}
+        Expected Status Code: ${{ steps.extract.outputs.result['expected-status-code'] }}
         Expected Headers:
-        ${{ fromJson(steps.extract.outputs.result).expectedHeaders }}
+        ${{ steps.extract.outputs.result['expected-headers'] }}
         Expected Body:
-        ${{ fromJson(steps.extract.outputs.result).expectedBody }}
+        ${{ steps.extract.outputs.result['expected-body'] }}
         Project Structure:
         $(find spec -type d | sort | sed 's/^/  /')
         Relevant Source Code:
@@ -108,15 +113,15 @@ jobs:
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result).testCaseName }}"
-        title: "New test case: ${{ fromJson(steps.extract.outputs.result).testCaseName }}"
+        commit-message: "Add new test case: ${{ steps.extract.outputs.result['test-case-name'] }}"
+        title: "New test case: ${{ steps.extract.outputs.result['test-case-name'] }}"
         body: |
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
           Test Case Details:
-          - RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
-          - RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
-          - Test Case Name: ${{ fromJson(steps.extract.outputs.result).testCaseName }}
-          - Mode: ${{ fromJson(steps.extract.outputs.result).mode }}
+          - RFC Document: ${{ steps.extract.outputs.result['rfc-document'] }}
+          - RFC Section: ${{ steps.extract.outputs.result['rfc-section'] }}
+          - Test Case Name: ${{ steps.extract.outputs.result['test-case-name'] }}
+          - Mode: ${{ steps.extract.outputs.result['mode'] }}
           Generated test case:
           ```go
           ${{ steps.generate.outputs.result }}
@@ -124,4 +129,3 @@ jobs:
           Please review and adjust as necessary.
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
-        
