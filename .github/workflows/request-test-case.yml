@@ -49,21 +49,23 @@ jobs:
     - name: Prepare prompt
       id: prepare_prompt
       run: |
-        PROMPT_TEMPLATE=$(cat .github/prompts/test_case_prompt)
+        PROMPT_TEMPLATE=$(cat .github/prompts/test_case_prompt.txt)
         
+        # 使用 '|' 作為分隔符，並將多行內容轉換為單行
         PROMPT=$(echo "$PROMPT_TEMPLATE" | sed \
-          -e "s|{{RFC_DOCUMENT}}|${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}|g" \
-          -e "s|{{RFC_SECTION}}|${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}|g" \
-          -e "s|{{RFC_LINK}}|${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}|g" \
-          -e "s|{{TEST_CASE_NAME}}|${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}|g" \
-          -e "s|{{TEST_CASE_DESCRIPTION}}|${{ fromJson(steps.extract.outputs.result)['test-case-description'] }}|g" \
-          -e "s|{{MODE}}|${{ fromJson(steps.extract.outputs.result)['mode'] }}|g" \
-          -e "s|{{SAMPLE_REQUEST}}|${{ fromJson(steps.extract.outputs.result)['sample-request'] }}|g" \
-          -e "s|{{EXPECTED_STATUS_CODE}}|${{ fromJson(steps.extract.outputs.result)['expected-status-code'] }}|g" \
-          -e "s|{{EXPECTED_HEADERS}}|${{ fromJson(steps.extract.outputs.result)['expected-headers'] }}|g" \
-          -e "s|{{EXPECTED_BODY}}|${{ fromJson(steps.extract.outputs.result)['expected-body'] }}|g" \
+          -e "s|{{RFC_DOCUMENT}}|$(echo "${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{RFC_SECTION}}|$(echo "${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{RFC_LINK}}|$(echo "${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{TEST_CASE_NAME}}|$(echo "${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{TEST_CASE_DESCRIPTION}}|$(echo "${{ fromJson(steps.extract.outputs.result)['test-case-description'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{MODE}}|$(echo "${{ fromJson(steps.extract.outputs.result)['mode'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{SAMPLE_REQUEST}}|$(echo "${{ fromJson(steps.extract.outputs.result)['sample-request'] }}" | sed ':a;N;$!ba;s/\n/\\n/g')|g" \
+          -e "s|{{EXPECTED_STATUS_CODE}}|$(echo "${{ fromJson(steps.extract.outputs.result)['expected-status-code'] }}" | tr '\n' ' ')|g" \
+          -e "s|{{EXPECTED_HEADERS}}|$(echo "${{ fromJson(steps.extract.outputs.result)['expected-headers'] }}" | sed ':a;N;$!ba;s/\n/\\n/g')|g" \
+          -e "s|{{EXPECTED_BODY}}|$(echo "${{ fromJson(steps.extract.outputs.result)['expected-body'] }}" | sed ':a;N;$!ba;s/\n/\\n/g')|g"
         )
         
+        # 將 Project Structure 和 Relevant Source Code 添加到 prompt
         PROMPT+=$'\n\nProject Structure:\n'
         PROMPT+=$(find spec -type d | sort | sed 's/^/  /')
         PROMPT+=$'\n\nRelevant Source Code:\n'
@@ -92,6 +94,7 @@ jobs:
           const data = JSON.stringify({
             model: process.env.OPENAI_MODEL,
             messages: [{"role": "user", "content": process.env.PROMPT}],
+            max_tokens: 4000,
           });
           
           const options = {

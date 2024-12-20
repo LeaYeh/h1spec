@@ -32,6 +32,7 @@ Please adhere to the following specific requirements:
 - Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
 - Return a 'spec.TestError' for any test failures.
 - Ensure that the test case accurately reflects the provided Test Case Details, including the specific RFC requirements, expected status codes, headers, and body.
+- generate source code only in the max length of 4000 characters
 
 Here's a basic structure to follow:
 
@@ -60,3 +61,5 @@ func Http11YourTestGroup() *spec.TestGroup {
     
     return tg
 }
+
+
