@@ -186,7 +186,7 @@ jobs:
       run: |
         echo "Generated Go code:"
         echo "----------------------------------------"
-        echo "${{ steps.generate.outputs.result }}"
+        echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
         echo "----------------------------------------"
 
     - name: Validate and format generated code
@@ -195,16 +195,22 @@ jobs:
       with:
         go-version: '1.16'
     - run: |
+        echo "Full generated code:"
+        echo "----------------------------------------"
+        echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
+        echo "----------------------------------------"
+        
         # 移除可能的前導空白行和多餘的反引號
-        GENERATED_CODE=$(echo "${{ steps.generate.outputs.result }}" | sed '/./,$!d' | sed 's/^```go//g' | sed 's/```$//g')
+        GENERATED_CODE=$(echo '${{ steps.generate.outputs.result }}' | sed '/./,$!d' | sed 's/^```go//g' | sed 's/```$//g')
         echo "$GENERATED_CODE" > temp_test.go
         echo "Contents of temp_test.go:"
         cat temp_test.go
         # 嘗試格式化代碼
-        go fmt temp_test.go
+        go fmt temp_test.go || true
         # 嘗試編譯代碼
         if ! go build temp_test.go; then
           echo "Generated code failed to compile"
+          cat temp_test.go
           exit 1
         fi
 
