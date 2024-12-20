@@ -1,6 +1,6 @@
 name: HTTP/1.1 Test Case
 description: Create a new HTTP/1.1 test case
-title: "[Test Case]: "
+title: "[Test Case] HTTP/1.1: Request for a new test case - <Test Case Name>"
 labels: 
   - test-case
   - http1.1
@@ -103,3 +103,4 @@ body:
       label: Expected Body
       description: Describe the expected body in the response, if any
       placeholder: The response body should contain an error message
+  
