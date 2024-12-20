@@ -167,7 +167,7 @@ jobs:
         echo '${{ fromJson(steps.generate.outputs.result).content }}' > raw_code.txt
         
         # 移除可能的 Markdown 代碼塊標記和其他非 Go 代碼內容
-        sed -n '/^```go$/,/^```$/p' raw_code.txt | sed '1d;$d' > cleaned_code.txt
+        sed -n '/^```go$/,/^```$/ {/^```/!p}' raw_code.txt > cleaned_code.txt
         
         echo "Cleaned generated code:"
         echo "----------------------------------------"
