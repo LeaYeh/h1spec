@@ -131,6 +131,7 @@ jobs:
       uses: actions/github-script@v6
       env:
         OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        OPENAI_MODEL: 'gpt-4o'
       with:
         script: |
           const https = require('https');
@@ -141,8 +142,6 @@ jobs:
           const data = JSON.stringify({
             model: "gpt-3.5-turbo",
             messages: [{"role": "user", "content": process.env.PROMPT}],
-            max_tokens: 2000,
-            temperature: 0.7
           });
           
           const options = {
@@ -182,19 +181,12 @@ jobs:
             req.end();
           });
 
-    - name: Debug - Output generated code
-      run: |
-        echo "Generated Go code:"
-        echo "----------------------------------------"
-        echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
-        echo "----------------------------------------"
-
     - name: Validate and format generated code
       id: validate
       uses: actions/setup-go@v2
       with:
         go-version: '1.16'
-      run: |
+    - run: |
         echo "Full generated code:"
         echo "----------------------------------------"
         echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
