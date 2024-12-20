@@ -180,6 +180,16 @@ jobs:
             req.write(data);
             req.end();
           });
+    
+    - name: Save API response
+      run: |
+        echo '${{ fromJson(steps.generate.outputs.result).full_response }}' > api_response.json
+        
+    - name: Upload API response as artifact
+      uses: actions/upload-artifact@v2
+      with:
+        name: api-response
+        path: api_response.json
 
     - name: Validate and format generated code
       id: validate
@@ -187,10 +197,8 @@ jobs:
       with:
         go-version: '1.20'
     - run: |
-        # 將生成的代碼寫入文件，避免 shell 解釋
         echo '${{ steps.generate.outputs.result }}' > raw_code.txt
         
-        # 移除可能的 Markdown 代碼塊標記和其他非 Go 代碼內容
         sed -n '/^```go$/,/^```$/p' raw_code.txt | sed '1d;$d' > cleaned_code.txt
         
         echo "Raw generated code:"
@@ -207,10 +215,8 @@ jobs:
         echo "Contents of temp_test.go:"
         cat temp_test.go
         
-        # 嘗試格式化代碼
         go fmt temp_test.go || true
         
-        # 嘗試編譯代碼
         if ! go vet temp_test.go; then
           echo "Generated code failed to compile"
           cat temp_test.go
