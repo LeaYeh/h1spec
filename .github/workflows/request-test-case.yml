@@ -186,7 +186,7 @@ jobs:
         echo '${{ fromJson(steps.generate.outputs.result).full_response }}' > api_response.json
         
     - name: Upload API response as artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: api-response
         path: api_response.json
