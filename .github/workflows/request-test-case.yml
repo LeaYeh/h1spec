@@ -185,13 +185,8 @@ jobs:
       id: validate
       uses: actions/setup-go@v2
       with:
-        go-version: '1.16'
+        go-version: '1.20'
     - run: |
-        echo "Full generated code:"
-        echo "----------------------------------------"
-        echo '${{ steps.generate.outputs.result }}' | sed 's/./\\&/g'
-        echo "----------------------------------------"
-        
         # 將生成的代碼寫入文件，避免 shell 解釋
         echo '${{ steps.generate.outputs.result }}' > raw_code.txt
         
