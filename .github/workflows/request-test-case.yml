@@ -140,7 +140,7 @@ jobs:
           console.log(process.env.PROMPT);
           
           const data = JSON.stringify({
-            model: `${process.env.OPENAI_API_KEY}`,
+            model: `${process.env.OPENAI_MODEL}`,
             messages: [{"role": "user", "content": process.env.PROMPT}],
           });
           
