@@ -53,19 +53,19 @@ jobs:
         echo "You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
 
         Test Case Details:
-        RFC Document: ${{ steps.extract.outputs.result['rfc-document'] }}
-        RFC Section: ${{ steps.extract.outputs.result['rfc-section'] }}
-        RFC Link: ${{ steps.extract.outputs.result['rfc-link'] }}
-        Test Case Name: ${{ steps.extract.outputs.result['test-case-name'] }}
-        Test Case Description: ${{ steps.extract.outputs.result['test-case-description'] }}
-        Mode: ${{ steps.extract.outputs.result['mode'] }}
+        RFC Document: ${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}
+        RFC Section: ${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}
+        RFC Link: ${{ fromJson(steps.extract.outputs.result)['rfc-link'] }}
+        Test Case Name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
+        Test Case Description: ${{ fromJson(steps.extract.outputs.result)['test-case-description'] }}
+        Mode: ${{ fromJson(steps.extract.outputs.result)['mode'] }}
         Sample Request:
-        ${{ steps.extract.outputs.result['sample-request'] }}
-        Expected Status Code: ${{ steps.extract.outputs.result['expected-status-code'] }}
+        ${{ fromJson(steps.extract.outputs.result)['sample-request'] }}
+        Expected Status Code: ${{ fromJson(steps.extract.outputs.result)['expected-status-code'] }}
         Expected Headers:
-        ${{ steps.extract.outputs.result['expected-headers'] }}
+        ${{ fromJson(steps.extract.outputs.result)['expected-headers'] }}
         Expected Body:
-        ${{ steps.extract.outputs.result['expected-body'] }}
+        ${{ fromJson(steps.extract.outputs.result)['expected-body'] }}
 
         Project Structure:
         $(find spec -type d | sort | sed 's/^/  /')
@@ -89,6 +89,7 @@ jobs:
         - Provide a comment for each main step in the test function.
         - Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
         - Return a 'spec.TestError' for any test failures.
+        - Ensure that the test case accurately reflects the provided Test Case Details, including the specific RFC requirements, expected status codes, headers, and body.
 
         Here's a basic structure to follow:
 
@@ -119,7 +120,7 @@ jobs:
         }
         ```
 
-        Please provide the complete test function code, including any necessary imports or helper functions." >> $GITHUB_ENV
+        Please provide the complete test function code, including any necessary imports or helper functions. Ensure that the generated test case accurately implements the specific requirements and expectations detailed in the Test Case Details provided above." >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
         
         echo "Debug: Prompt content"
@@ -181,14 +182,27 @@ jobs:
             req.end();
           });
 
+    - name: Debug - Output generated code
+      run: |
+        echo "Generated Go code:"
+        echo "----------------------------------------"
+        echo "${{ steps.generate.outputs.result }}"
+        echo "----------------------------------------"
+
     - name: Validate and format generated code
       id: validate
       uses: actions/setup-go@v2
       with:
         go-version: '1.16'
     - run: |
-        echo "${{ steps.generate.outputs.result }}" > temp_test.go
+        # 移除可能的前導空白行和多餘的反引號
+        GENERATED_CODE=$(echo "${{ steps.generate.outputs.result }}" | sed '/./,$!d' | sed 's/^```go//g' | sed 's/```$//g')
+        echo "$GENERATED_CODE" > temp_test.go
+        echo "Contents of temp_test.go:"
+        cat temp_test.go
+        # 嘗試格式化代碼
         go fmt temp_test.go
+        # 嘗試編譯代碼
         if ! go build temp_test.go; then
           echo "Generated code failed to compile"
           exit 1
@@ -198,15 +212,15 @@ jobs:
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Add new test case: ${{ steps.extract.outputs.result['test-case-name'] }}"
-        title: "New test case: ${{ steps.extract.outputs.result['test-case-name'] }}"
+        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
+        title: "New test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
         body: |
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
           Test Case Details:
-          - RFC Document: ${{ steps.extract.outputs.result['rfc-document'] }}
-          - RFC Section: ${{ steps.extract.outputs.result['rfc-section'] }}
-          - Test Case Name: ${{ steps.extract.outputs.result['test-case-name'] }}
-          - Mode: ${{ steps.extract.outputs.result['mode'] }}
+          - RFC Document: ${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}
+          - RFC Section: ${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}
+          - Test Case Name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
+          - Mode: ${{ fromJson(steps.extract.outputs.result)['mode'] }}
           Generated test case:
           ```go
           ${{ steps.generate.outputs.result }}
