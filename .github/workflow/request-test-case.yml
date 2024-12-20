@@ -40,11 +40,9 @@ jobs:
           };
 
     - name: Prepare prompt
-      id: prompt
       run: |
-        echo "Preparing prompt..."
-        PROMPT=$(cat <<'EOT'
-        You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
+        echo 'PROMPT<<EOF' >> $GITHUB_ENV
+        echo "You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
 
         Test Case Details:
         RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
@@ -76,19 +74,15 @@ jobs:
         5. Include appropriate comments explaining the test case and its expected behavior.
         6. Use the provided Mode (MUST, SHOULD, MAY) to determine the severity of the test.
 
-        Please provide the complete test function code, including any necessary imports or helper functions.
-        EOT
-        )
-        echo "prompt<<EOF" >> $GITHUB_OUTPUT
-        echo "$PROMPT" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+        Please provide the complete test function code, including any necessary imports or helper functions." >> $GITHUB_ENV
+        echo 'EOF' >> $GITHUB_ENV
 
     - name: Generate test case
       id: generate
       uses: openai/openai-api@v1
       with:
         api-key: ${{ secrets.OPENAI_API_KEY }}
-        prompt: ${{ steps.prompt.outputs.prompt }}
+        prompt: ${{ env.PROMPT }}
         max-tokens: 1000
         temperature: 0.7
 
