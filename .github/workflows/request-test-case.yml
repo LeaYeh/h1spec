@@ -140,7 +140,7 @@ jobs:
           console.log(process.env.PROMPT);
           
           const data = JSON.stringify({
-            model: "gpt-3.5-turbo",
+            model: `${process.env.OPENAI_API_KEY}`,
             messages: [{"role": "user", "content": process.env.PROMPT}],
           });
           
