@@ -1,117 +1,107 @@
-name: Generate Test Case
+name: HTTP/1.1 Test Case
+description: Create a new HTTP/1.1 test case
+title: "[Test Case] HTTP/1.1: Request for a new test case - <Test Case Name>"
+labels: 
+  - test-case
+  - http1.1
+assignees:
+  - octocat
+  - LeaYeh
 
-on:
-  issues:
-    types: [opened, labeled, edited]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to create a new test case! Please fill out the information below.
 
-jobs:
-  generate-test-case:
-    runs-on: ubuntu-latest
-    if: contains(github.event.issue.labels.*.name, 'test-case')
-    steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+  - type: input
+    id: rfc-document
+    attributes:
+      label: RFC Document
+      description: Which RFC document is this test case based on?
+      placeholder: e.g., RFC 7230
+    validations:
+      required: true
 
-    - name: Extract issue information
-      id: extract
-      uses: actions/github-script@v6
-      with:
-        script: |
-          const issue = await github.rest.issues.get({
-            owner: context.repo.owner,
-            repo: context.repo.repo,
-            issue_number: context.issue.number
-          });
-          
-          // 直接從 issue body 提取結構化數據
-          const formData = JSON.parse(issue.data.body);
-          
-          return {
-            rfcDocument: formData['rfc-document'],
-            rfcSection: formData['rfc-section'],
-            rfcLink: formData['rfc-link'],
-            testCaseName: formData['test-case-name'],
-            testCaseDescription: formData['test-case-description'],
-            mode: formData['mode'],
-            sampleRequest: formData['sample-request'],
-            expectedStatusCode: formData['expected-status-code'],
-            expectedHeaders: formData['expected-headers'],
-            expectedBody: formData['expected-body']
-          };
+  - type: input
+    id: rfc-section
+    attributes:
+      label: RFC Section
+      description: Which section of the RFC is this test case related to?
+      placeholder: e.g., Section 3.3.2
+    validations:
+      required: true
 
-    - name: Prepare prompt
-      id: prompt
-      run: |
-        echo "Preparing prompt..."
-        PROMPT=$(cat <<EOT
-        You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
+  - type: input
+    id: rfc-link
+    attributes:
+      label: RFC Link
+      description: Provide a link to the relevant RFC section, if available.
+      placeholder: https://tools.ietf.org/html/rfc7230#section-3.3.2
 
-        Test Case Details:
-        RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
-        RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
-        RFC Link: ${{ fromJson(steps.extract.outputs.result).rfcLink }}
-        Test Case Name: ${{ fromJson(steps.extract.outputs.result).testCaseName }}
-        Test Case Description: ${{ fromJson(steps.extract.outputs.result).testCaseDescription }}
-        Mode: ${{ fromJson(steps.extract.outputs.result).mode }}
-        Sample Request:
-        ${{ fromJson(steps.extract.outputs.result).sampleRequest }}
-        Expected Status Code: ${{ fromJson(steps.extract.outputs.result).expectedStatusCode }}
-        Expected Headers:
-        ${{ fromJson(steps.extract.outputs.result).expectedHeaders }}
-        Expected Body:
-        ${{ fromJson(steps.extract.outputs.result).expectedBody }}
+  - type: textarea
+    id: test-case-name
+    attributes:
+      label: Test Case Name
+      description: Enter a concise name for the test case
+      placeholder: e.g., Invalid HTTP Version Format
+    validations:
+      required: true
 
-        Project Structure:
-        $(tree spec)
+  - type: textarea
+    id: test-case-description
+    attributes:
+      label: Test Case Description
+      description: Briefly describe the test case
+      placeholder: This test case verifies the server's response to an invalid HTTP version format in the request line.
+    validations:
+      required: true
 
-        Relevant Source Code:
-        $(cat spec/http1.1/*.go)
+  - type: dropdown
+    id: mode
+    attributes:
+      label: Mode
+      description: Select the compliance level for this test case
+      options:
+        - MUST
+        - SHOULD
+        - MAY
+    validations:
+      required: true
 
-        Based on the provided information, please generate a Go test function that implements the described test case. The test function should:
+  - type: textarea
+    id: sample-request
+    attributes:
+      label: Sample Request
+      description: Provide the HTTP request for this test case
+      placeholder: |
+        GET / HTTP/1.0
+        Host: example.com
+    validations:
+      required: true
 
-        1. Follow the existing code style and conventions in the h1spec project.
-        2. Be placed in the appropriate file within the spec/http1.1 directory, likely RFC7230.go or a new file if necessary.
-        3. Use the existing utility functions and structures from the project where applicable.
-        4. Implement the test case as described, including the sample request, expected status code, headers, and body.
-        5. Include appropriate comments explaining the test case and its expected behavior.
-        6. Use the provided Mode (MUST, SHOULD, MAY) to determine the severity of the test.
+  - type: input
+    id: expected-status-code
+    attributes:
+      label: Expected Status Code
+      description: What is the expected HTTP status code in the response?
+      placeholder: e.g., 400
+    validations:
+      required: true
 
-        Please provide the complete test function code, including any necessary imports or helper functions.
-        EOT
-        )
-        echo "PROMPT<<EOF" >> $GITHUB_OUTPUT
-        echo "$PROMPT" >> $GITHUB_OUTPUT
-        echo "EOF" >> $GITHUB_OUTPUT
+  - type: textarea
+    id: expected-headers
+    attributes:
+      label: Expected Headers
+      description: List any specific headers expected in the response
+      placeholder: |
+        Content-Type: text/plain
+        Connection: close
 
-    - name: Generate test case
-      id: generate
-      uses: openai/openai-api@v1
-      with:
-        api-key: ${{ secrets.OPENAI_API_KEY }}
-        prompt: ${{ steps.prompt.outputs.PROMPT }}
-        max-tokens: 1000
-        temperature: 0.7
-
-    - name: Create pull request
-      uses: peter-evans/create-pull-request@v3
-      with:
-        token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result).testCaseName }}"
-        title: "New test case: ${{ fromJson(steps.extract.outputs.result).testCaseName }}"
-        body: |
-          This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
-
-          Test Case Details:
-          - RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
-          - RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
-          - Test Case Name: ${{ fromJson(steps.extract.outputs.result).testCaseName }}
-          - Mode: ${{ fromJson(steps.extract.outputs.result).mode }}
-
-          Generated test case:
-          ```go
-          ${{ steps.generate.outputs.text }}
-          ```
-
-          Please review and adjust as necessary.
-        branch: "test-case-${{ github.event.issue.number }}"
-        base: main
+  - type: textarea
+    id: expected-body
+    attributes:
+      label: Expected Body
+      description: Describe the expected body in the response, if any
+      placeholder: The response body should contain an error message
+  

@@ -23,7 +23,6 @@ jobs:
             issue_number: context.issue.number
           });
           
-          // 直接從 issue body 提取結構化數據
           const formData = JSON.parse(issue.data.body);
           
           return {
