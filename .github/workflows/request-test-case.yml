@@ -211,7 +211,7 @@ jobs:
         go fmt temp_test.go || true
         
         # 嘗試編譯代碼
-        if ! go build temp_test.go; then
+        if ! go vet temp_test.go; then
           echo "Generated code failed to compile"
           cat temp_test.go
           exit 1
