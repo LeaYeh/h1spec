@@ -69,7 +69,7 @@ jobs:
         PROMPT+=$'\n\nProject Structure:\n'
         PROMPT+=$(find spec -type d | sort | sed 's/^/  /')
         PROMPT+=$'\n\nRelevant Source Code:\n'
-        PROMPT+=$(find spec/http1.1 -name '*.go' -type f -exec echo '{}:' \; -exec cat {} \; -exec echo \;)
+        PROMPT+=$(find spec/http1.1 -name 'RFC7230_2_5*.go' -type f -exec echo '{}:' \; -exec cat {} \; -exec echo \;)
         
         echo "PROMPT<<EOF" >> $GITHUB_ENV
         echo "$PROMPT" >> $GITHUB_ENV
