@@ -1,9 +1,7 @@
 name: Generate Test Case
-
 on:
   issues:
     types: [opened, labeled, edited]
-
 jobs:
   generate-test-case:
     runs-on: ubuntu-latest
@@ -53,6 +51,7 @@ jobs:
       run: |
         echo 'PROMPT<<EOF' >> $GITHUB_ENV
         echo "You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
+
         Test Case Details:
         RFC Document: ${{ steps.extract.outputs.result['rfc-document'] }}
         RFC Section: ${{ steps.extract.outputs.result['rfc-section'] }}
@@ -67,17 +66,59 @@ jobs:
         ${{ steps.extract.outputs.result['expected-headers'] }}
         Expected Body:
         ${{ steps.extract.outputs.result['expected-body'] }}
+
         Project Structure:
         $(find spec -type d | sort | sed 's/^/  /')
+
         Relevant Source Code:
         $(find spec/http1.1 -name '*.go' -type f -exec echo '{}:' \; -exec cat {} \; -exec echo \;)
-        Based on the provided information, please generate a Go test function that implements the described test case. The test function should:
+
+        Based on the provided information, please generate a Go test function that implements the described test case. The test function should adhere to the following guidelines:
+
         1. Follow the existing code style and conventions in the h1spec project.
         2. Be placed in the appropriate file within the spec/http1.1 directory, likely RFC7230.go or a new file if necessary.
         3. Use the existing utility functions and structures from the project where applicable.
         4. Implement the test case as described, including the sample request, expected status code, headers, and body.
         5. Include appropriate comments explaining the test case and its expected behavior.
         6. Use the provided Mode (MUST, SHOULD, MAY) to determine the severity of the test.
+
+        Please adhere to the following specific requirements:
+        - Name the test function using the format 'TestXXXX' where XXXX describes the specific test case.
+        - Use the 'tg.AddTestCase(&spec.TestCase{...})' structure to add the test case.
+        - Include all necessary import statements at the beginning of the file.
+        - Provide a comment for each main step in the test function.
+        - Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
+        - Return a 'spec.TestError' for any test failures.
+
+        Here's a basic structure to follow:
+
+        ```go
+        package http11
+
+        import (
+            'github.com/LeaYeh/h1spec/config'
+            'github.com/LeaYeh/h1spec/spec'
+        )
+
+        func Http11YourTestGroup() *spec.TestGroup {
+            tg := NewTestGroup('RFC7230.X.X', 'Your Test Group Name')
+            
+            tg.AddTestCase(&spec.TestCase{
+                Strict:      true, // or false, based on the Mode
+                Desc:        'Your test case description',
+                Requirement: 'The specific requirement from the RFC',
+                Run: func(c *config.Config, conn *spec.Conn) error {
+                    // Your test implementation here
+                    // ...
+                    
+                    return nil // or return &spec.TestError{...} if the test fails
+                },
+            })
+            
+            return tg
+        }
+        ```
+
         Please provide the complete test function code, including any necessary imports or helper functions." >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
         
@@ -97,15 +138,16 @@ jobs:
           console.log(process.env.PROMPT);
           
           const data = JSON.stringify({
-            prompt: process.env.PROMPT,
-            max_tokens: 1000,
+            model: "gpt-3.5-turbo",
+            messages: [{"role": "user", "content": process.env.PROMPT}],
+            max_tokens: 2000,
             temperature: 0.7
           });
           
           const options = {
             hostname: 'api.openai.com',
             port: 443,
-            path: '/v1/engines/davinci-codex/completions',
+            path: '/v1/chat/completions',
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -126,7 +168,7 @@ jobs:
                 console.log('Debug: OpenAI API response');
                 console.log(responseBody);
                 const response = JSON.parse(responseBody);
-                resolve(response.choices[0].text);
+                resolve(response.choices[0].message.content);
               });
             });
           
@@ -138,6 +180,19 @@ jobs:
             req.write(data);
             req.end();
           });
+
+    - name: Validate and format generated code
+      id: validate
+      uses: actions/setup-go@v2
+      with:
+        go-version: '1.16'
+    - run: |
+        echo "${{ steps.generate.outputs.result }}" > temp_test.go
+        go fmt temp_test.go
+        if ! go build temp_test.go; then
+          echo "Generated code failed to compile"
+          exit 1
+        fi
 
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
