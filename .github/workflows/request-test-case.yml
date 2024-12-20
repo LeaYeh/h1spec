@@ -194,14 +194,14 @@ jobs:
       uses: actions/setup-go@v2
       with:
         go-version: '1.16'
-    - run: |
+      run: |
         echo "Full generated code:"
         echo "----------------------------------------"
         echo '${{ steps.generate.outputs.result }}' | sed 's/^/    /'
         echo "----------------------------------------"
         
-        # 移除 Markdown 代碼塊標記和其他非 Go 代碼內容
-        CLEANED_CODE=$(echo '${{ steps.generate.outputs.result }}' | sed -n '/^```go$/,/^```$/p' | sed '1d;$d')
+        # 移除引號和轉義字符，並解碼 \n 為實際的換行
+        CLEANED_CODE=$(echo '${{ steps.generate.outputs.result }}' | sed 's/^"//; s/"$//; s/\\n/\n/g; s/\\t/\t/g; s/\\"/"/g')
         
         echo "Cleaned generated code:"
         echo "----------------------------------------"
@@ -222,7 +222,8 @@ jobs:
           exit 1
         fi
         
-        echo "::set-output name=cleaned_code::$CLEANED_CODE"
+        ESCAPED_CODE=$(echo "$CLEANED_CODE" | awk '{printf "%s\\n", $0}')
+        echo "cleaned_code=$ESCAPED_CODE" >> $GITHUB_OUTPUT
 
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
