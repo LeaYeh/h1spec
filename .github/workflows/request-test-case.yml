@@ -23,7 +23,12 @@ jobs:
             issue_number: context.issue.number
           });
           
+          console.log('Issue body:', issue.data.body);
+          
+          // 直接從 issue body 提取結構化數據
           const formData = JSON.parse(issue.data.body);
+          
+          console.log('Parsed form data:', JSON.stringify(formData, null, 2));
           
           return {
             rfcDocument: formData['rfc-document'],
@@ -39,10 +44,10 @@ jobs:
           };
 
     - name: Prepare prompt
+      id: prepare_prompt
       run: |
         echo 'PROMPT<<EOF' >> $GITHUB_ENV
         echo "You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
-
         Test Case Details:
         RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
         RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
@@ -57,33 +62,47 @@ jobs:
         ${{ fromJson(steps.extract.outputs.result).expectedHeaders }}
         Expected Body:
         ${{ fromJson(steps.extract.outputs.result).expectedBody }}
-
         Project Structure:
-        $(tree spec)
-
+        $(find spec -type d | sort | sed 's/^/  /')
         Relevant Source Code:
-        $(cat spec/http1.1/*.go)
-
+        $(find spec/http1.1 -name '*.go' -type f -exec echo '{}:' \; -exec cat {} \; -exec echo \;)
         Based on the provided information, please generate a Go test function that implements the described test case. The test function should:
-
         1. Follow the existing code style and conventions in the h1spec project.
         2. Be placed in the appropriate file within the spec/http1.1 directory, likely RFC7230.go or a new file if necessary.
         3. Use the existing utility functions and structures from the project where applicable.
         4. Implement the test case as described, including the sample request, expected status code, headers, and body.
         5. Include appropriate comments explaining the test case and its expected behavior.
         6. Use the provided Mode (MUST, SHOULD, MAY) to determine the severity of the test.
-
         Please provide the complete test function code, including any necessary imports or helper functions." >> $GITHUB_ENV
         echo 'EOF' >> $GITHUB_ENV
+        
+        echo "Debug: Prompt content"
+        cat $GITHUB_ENV
 
     - name: Generate test case
       id: generate
-      uses: openai/openai-api@v1
+      uses: actions/github-script@v6
+      env:
+        OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       with:
-        api-key: ${{ secrets.OPENAI_API_KEY }}
-        prompt: ${{ env.PROMPT }}
-        max-tokens: 1000
-        temperature: 0.7
+        script: |
+          const axios = require('axios');
+          console.log('Debug: Prompt from environment variable');
+          console.log(process.env.PROMPT);
+          
+          const response = await axios.post('https://api.openai.com/v1/engines/davinci-codex/completions', {
+            prompt: process.env.PROMPT,
+            max_tokens: 1000,
+            temperature: 0.7
+          }, {
+            headers: {
+              'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+              'Content-Type': 'application/json'
+            }
+          });
+          console.log('Debug: OpenAI API response');
+          console.log(JSON.stringify(response.data, null, 2));
+          return response.data.choices[0].text;
 
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
@@ -93,18 +112,16 @@ jobs:
         title: "New test case: ${{ fromJson(steps.extract.outputs.result).testCaseName }}"
         body: |
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
-
           Test Case Details:
           - RFC Document: ${{ fromJson(steps.extract.outputs.result).rfcDocument }}
           - RFC Section: ${{ fromJson(steps.extract.outputs.result).rfcSection }}
           - Test Case Name: ${{ fromJson(steps.extract.outputs.result).testCaseName }}
           - Mode: ${{ fromJson(steps.extract.outputs.result).mode }}
-
           Generated test case:
           ```go
-          ${{ steps.generate.outputs.text }}
+          ${{ steps.generate.outputs.result }}
           ```
-
           Please review and adjust as necessary.
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
+        
