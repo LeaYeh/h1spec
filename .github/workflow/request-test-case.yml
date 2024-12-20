@@ -2,7 +2,7 @@ name: Generate Test Case
 
 on:
   issues:
-    types: [opened, edited]
+    types: [opened, labeled, edited]
 
 jobs:
   generate-test-case:
@@ -43,7 +43,7 @@ jobs:
       id: prompt
       run: |
         echo "Preparing prompt..."
-        PROMPT=$(cat <<EOT
+        PROMPT=$(cat <<'EOT'
         You are an expert HTTP/1.1 test case developer. Your task is to create a new test case for the h1spec project based on the provided issue form and the existing project structure.
 
         Test Case Details:
@@ -79,7 +79,7 @@ jobs:
         Please provide the complete test function code, including any necessary imports or helper functions.
         EOT
         )
-        echo "PROMPT<<EOF" >> $GITHUB_OUTPUT
+        echo "prompt<<EOF" >> $GITHUB_OUTPUT
         echo "$PROMPT" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
@@ -88,7 +88,7 @@ jobs:
       uses: openai/openai-api@v1
       with:
         api-key: ${{ secrets.OPENAI_API_KEY }}
-        prompt: ${{ steps.prompt.outputs.PROMPT }}
+        prompt: ${{ steps.prompt.outputs.prompt }}
         max-tokens: 1000
         temperature: 0.7
 
