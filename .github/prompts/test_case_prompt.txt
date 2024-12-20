@@ -62,4 +62,12 @@ func Http11YourTestGroup() *spec.TestGroup {
     return tg
 }
 
+generate the response in flowing format:
 
+```go
+<SOURCE CODE>
+```
+
+```filename
+e.g. RFC7230_2_5_error_handling.go
+```

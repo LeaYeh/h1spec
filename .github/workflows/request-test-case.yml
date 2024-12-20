@@ -67,7 +67,7 @@ jobs:
         
         # 將 Project Structure 和 Relevant Source Code 添加到 prompt
         PROMPT+=$'\n\nProject Structure:\n'
-        PROMPT+=$(find spec -type d | sort | sed 's/^/  /')
+        PROMPT+=$(find spec/http1.1 -type f | sort | sed 's/^/  /')
         PROMPT+=$'\n\nRelevant Source Code:\n'
         PROMPT+=$(find spec/http1.1 -name 'RFC7230_2_5*.go' -type f -exec echo '{}:' \; -exec cat {} \; -exec echo \;)
         
@@ -166,6 +166,10 @@ jobs:
         # 將生成的代碼寫入文件
         echo '${{ fromJson(steps.generate.outputs.result).content }}' > raw_code.txt
         
+        # 提取文件名
+        FILENAME=$(sed -n 's/^```filename\s*\(.*\)\s*$/\1/p' raw_code.txt)
+        echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+        
         # 移除可能的 Markdown 代碼塊標記和其他非 Go 代碼內容
         sed -n '/^```go$/,/^```$/ {/^```/!p}' raw_code.txt > cleaned_code.txt
         
@@ -195,6 +199,24 @@ jobs:
         echo "$ESCAPED_CODE" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
 
+    - name: Create file in appropriate directory
+      id: create_file
+      run: |
+        FILENAME="${{ steps.validate.outputs.filename }}"
+        DIRECTORY="spec/http1.1"
+        FILEPATH="$DIRECTORY/$FILENAME"
+        
+        # 確保目錄存在
+        mkdir -p "$DIRECTORY"
+        
+        # 將代碼寫入文件
+        echo "${{ steps.validate.outputs.cleaned_code }}" > "$FILEPATH"
+        
+        echo "File created at: $FILEPATH"
+        
+        # 將文件路徑保存為輸出，以便後續步驟使用
+        echo "filepath=$FILEPATH" >> $GITHUB_OUTPUT
+
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
       with:
@@ -215,10 +237,8 @@ jobs:
           - Created Timestamp: ${{ fromJson(steps.generate.outputs.result).created }}
           - Model Used: ${{ fromJson(steps.generate.outputs.result).model }}
           
-          Generated test case:
-          ```go
-          ${{ steps.validate.outputs.cleaned_code }}
-          ```
+          Generated test case has been added to: `${{ steps.create_file.outputs.filepath }}`
+          
           Please review and adjust as necessary.
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
