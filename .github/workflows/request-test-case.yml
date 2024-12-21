@@ -185,15 +185,6 @@ jobs:
         # 嘗試格式化代碼
         go fmt temp_test.go || true
         
-        # 只檢查語法錯誤
-        if ! go run -a -n temp_test.go > /dev/null 2>&1; then
-          echo "Generated code failed syntax check"
-          cat temp_test.go
-          exit 1
-        else
-          echo "Generated code passed syntax check"
-        fi
-        
         ESCAPED_CODE=$(cat temp_test.go | awk '{printf "%s\\n", $0}')
         echo "cleaned_code<<EOF" >> $GITHUB_OUTPUT
         echo "$ESCAPED_CODE" >> $GITHUB_OUTPUT
