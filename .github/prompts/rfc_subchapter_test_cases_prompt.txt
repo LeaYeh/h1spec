@@ -83,3 +83,7 @@ func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
 ```filename
 e.g. RFC7230_2_5_error_handling.go
 ```
+
+```test-group
+EMPTY
+```
