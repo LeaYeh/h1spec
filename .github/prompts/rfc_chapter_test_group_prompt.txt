@@ -53,14 +53,19 @@ func HTTP11Architecture() *spec.TestGroup {
 2. Use subchapter-specific references (e.g., `RFC7230_2_5`) when creating or extending the test groups.
 3. filename should be in the format `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_<CHAPTER_TITLE>.go` (e.g., RFC7230_2_architecture.go).
 
-generate the response in flowing format:
+generate the response in flowing format, use code block for the source code and filename block for the filename and test-group block for the test-group name:
 
 ```go
+package http11
+
+import "github.com/LeaYeh/h1spec/spec"
+
 func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
 	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}", "<CHAPTER_TITLE>")
 
+    // Add subchapter-level test groups without test case implementation
+    // e.g. tg.AddTestGroup(HTTP11ErrorHandling()) (format HTTP11<TEST_CASE_GROUP>)
 	tg.AddTestGroup(HTTP11<TEST_CASE_GROUP>())
-    ...
 
 	return tg
 }

@@ -67,13 +67,27 @@ func Http11YourTestGroup() *spec.TestGroup {
     return tg
 }
 
-generate the response in flowing format:
+generate the response in flowing format, use code block for the source code and filename block for the filename and test-group block for the test-group name:
 
 ```go
+package http11
+
+import (
+    'github.com/LeaYeh/h1spec/config'
+    'github.com/LeaYeh/h1spec/spec'
+)
+
 func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
 	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}"."{{SUBSECTION}}", "<TEST_CASE_NAME>")
 
+    // Add test cases
 	tg.AddTestCase(&spec.TestCase{
+        ...
+    })
+    tg.AddTestCase(&spec.TestCase{
+        ...
+    })
+    tg.AddTestCase(&spec.TestCase{
         ...
     })
 	return tg
@@ -81,7 +95,7 @@ func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
 ```
 
 ```filename
-e.g. RFC7230_2_5_error_handling.go
+e.g. RFC{{PROTOCOL_NUM}}_{MAJOR_SECTION}_{{SUBSECTION}}_<TEST_CASE_GROUP>.go
 ```
 
 ```test-group

@@ -16,7 +16,7 @@ Please generate a Go file that implements the main RFC test group. The code shou
 4. Use the existing utility functions and structures from the project
 
 Requirements:
-- Create a main function named 'RFC{{RFC_NUMBER}}' if it is not exist or base one the current `Project Context` to extern it.
+- Create a main function named 'RFC{{PROTOCOL_NUM}}' if it is not exist or base one the current `Project Context` to extern it.
 - Include all necessary import statements
 - Follow the project's naming conventions
 - Provide clear documentation
@@ -39,16 +39,29 @@ func RFC7230() *spec.TestGroup {
 }
 ```
 
-generate the response in flowing format:
+generate the response in flowing format, use code block for the source code and filename block for the filename and test-group block for the test-group name:
 
 ```go
-<SOURCE CODE>
+package http11
+
+import "github.com/LeaYeh/h1spec/spec"
+
+func RFC{{PROTOCOL_NUM}}() *spec.TestGroup {
+	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}", "Protocol RFC{{PROTOCOL_NUM}}")
+
+	// Add chapter-level test groups
+	// Reference Implementation will be in the future files
+
+	return tg
+}
 ```
 
+PROTOCOL_NUM = {{PROTOCOL_NUM}}
 ```filename
-e.g. RFC7230.go
+e.g. RFC7230.go (format RFC<PROTOCOL_NUM>.go)
 ```
 
+CHAPTER_TITLE = {{CHAPTER_TITLE}}
 ```test-group
-e.g. HTTP11Architecture (format HTTP11{{CHAPTER_TITLE}})
+e.g. HTTP11Architecture (format HTTP11<CHAPTER_TITLE>)
 ```

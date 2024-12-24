@@ -42,7 +42,7 @@ jobs:
     # Generate protocol level if needed
     - name: Generate protocol level
       uses: ./.github/actions/generate-code
-      if: steps.check.outputs.rfc-exists == 'false' || steps.check.outputs.chapter-exists == 'false'
+      if: steps.parse.outputs.protocol-num != ''
       id: gen-protocol
       with:
         openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -57,7 +57,7 @@ jobs:
     # Generate chapter level if needed
     - name: Generate chapter level
       uses: ./.github/actions/generate-code
-      if: steps.check.outputs.chapter-exists == 'false'
+      if: steps.parse.outputs.major-section != ''
       id: gen-chapter
       with:
         openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -72,6 +72,7 @@ jobs:
 
     - name: Generate subchapter level
       uses: ./.github/actions/generate-code
+      if: steps.parse.outputs.subsection != ''
       id: generate
       with:
         openai-api-key: ${{ secrets.OPENAI_API_KEY }}
@@ -103,30 +104,31 @@ jobs:
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.GITHUB_TOKEN }}
-        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
-        title: "New test case: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}"
+        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Unknown Test Case' }}"
+        title: "New test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}"
         body: |
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
-
+    
           Test Case Details:
-          - RFC Document: ${{ fromJson(steps.extract.outputs.result)['rfc-document'] }}
-          - RFC Section: ${{ fromJson(steps.extract.outputs.result)['rfc-section'] }}
-          - Test Case Name: ${{ fromJson(steps.extract.outputs.result)['test-case-name'] }}
-          - Mode: ${{ fromJson(steps.extract.outputs.result)['mode'] }}
-
+          - RFC Document: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-document'] || 'Unknown' }}
+          - RFC Section: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-section'] || 'Unknown' }}
+          - Test Case Name: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}
+          - Mode: ${{ fromJson(steps.extract.outputs.result || '{}')['mode'] || 'Unknown' }}
+    
           ChatGPT Generation Details:
-          - Response ID: ${{ fromJson(steps.generate.outputs.result).id }}
-          - Object: ${{ fromJson(steps.generate.outputs.result).object }}
-          - Created Timestamp: ${{ fromJson(steps.generate.outputs.result).created }}
-          - Model Used: ${{ fromJson(steps.generate.outputs.result).model }}
-
+          - Response ID: ${{ fromJson(steps.generate.outputs.result || '{}').id || 'N/A' }}
+          - Object: ${{ fromJson(steps.generate.outputs.result || '{}').object || 'N/A' }}
+          - Created Timestamp: ${{ fromJson(steps.generate.outputs.result || '{}').created || 'N/A' }}
+          - Model Used: ${{ fromJson(steps.generate.outputs.result || '{}').model || 'Unknown' }}
+    
           Compilation Status: ${{ steps.verify.outputs.compile_status == 'success' && '✅ Code compiles successfully' || '❌ Compilation failed' }}
           ${{ steps.verify.outputs.compile_error && format('```\n{0}\n```', steps.verify.outputs.compile_error) }}
-
-          Generated test case has been added to: `${{ steps.verify.outputs.filepath }}`
+    
+          Generated test case has been added to: `${{ steps.verify.outputs.filepath || 'Unknown' }}`
           Please review and adjust as necessary.
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
         reviewers: |
           ${{ github.repository_owner }}
           ${{ github.event.issue.user.login }}
+    
