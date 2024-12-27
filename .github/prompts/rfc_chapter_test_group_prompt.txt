@@ -1,73 +1,45 @@
-# RFC Major Chapter Test Group Prompt
+# rfc_chapter_test_group_prompt.txt
 
-You are an expert in HTTP/1.1 test case development. Your task is to create or extend a **major chapter test group** for the `h1spec` project, based on the provided RFC document.  
+You are an expert in HTTP/1.1 test case development. Your task is to create or extend a major chapter test group for the `h1spec` project.
 
 ## Inputs:
-- **RFC Document**: RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_{{SUBSECTION}}
-- **RFC Link**: {{RFC_LINK}}
-- **Test Case Name**: {{TEST_CASE_NAME}}
+- RFC Document: RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}
+- RFC Link: {{RFC_LINK}}
+- Test Case Name: {{TEST_CASE_NAME}}
+- Parent Test Group: {{PARENT_TEST_GROUP}}
 - **Project Context**:  
 {{REFERENCE_CODE}}
 
-## Task Instructions:
-1. **If `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}.go` does not exist**, create a new test group file using the provided format. Use the example code structure for guidance and ensure that:
-   - The file is properly named based on the chapter (e.g., `RFC7230_2.go` for Chapter 2 of RFC7230).
-   - You add subchapter-level test groups if applicable.
-   - Include relevant imports and comments.
-2. **If `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}.go` already exists**, extend the file by adding a new subchapter-level test group or extending existing ones based on the target **Test Case Name** (e.g., `tg.AddTestGroup(Http11ErrorHandling())` for error handling). Reference the specific subsection where applicable (e.g., `RFC7230_2_5`).
+Task:
+Create or extend the major chapter test group file RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_<CHAPTER_TITLE>.go
 
 ## Requirements:
-- Use the project's **naming conventions** and **coding style**.
-- Leverage existing **utility functions** and **structures** in the `h1spec` project.
-- Provide **clear and structured documentation** to describe the purpose and scope of the test group.
-- Ensure **modularity** by structuring the code to allow for further subchapter-level test groups.
+- Follow the project's naming conventions and coding style.
+- Use existing utility functions and structures from the h1spec project.
+- Provide clear documentation describing the test group's purpose and scope.
+- Structure the code to allow for subchapter-level test groups.
+- If extending an existing file, add or update subchapter test groups based on the Test Case Name.
 
-### Example Output Format:
-For a new test group:  
-package http11
+Notes:
 
-import "github.com/LeaYeh/h1spec/spec"
+- Replace <CHAPTER_TITLE> with the actual chapter title from the RFC.
+- Replace <TEST_CASE_GROUP> with a descriptive name for the subchapter test group, derived from the Test Case Name.
+- Ensure the filename uses lowercase for the chapter title.
 
-// HTTP11Architecture implements tests for RFC7230 Section 2: "Architecture".
-func HTTP11Architecture() *spec.TestGroup {
-    tg := NewTestGroup("RFC7230.2", "Architecture")
-    tg.AddTestGroup(Http11ErrorHandling()) // Reference from RFC7230_2_5
-    tg.AddTestGroup(Http11ProtocolVersioning()) // Reference from RFC7230_2_6
-    return tg
-}
-
-For extending an existing file:  
-package http11
-
-import "github.com/LeaYeh/h1spec/spec"
-
-// Extended test group for RFC7230 Section 2: "Architecture".
-func HTTP11Architecture() *spec.TestGroup {
-    tg := NewTestGroup("RFC7230.2", "Architecture")
-    tg.AddTestGroup(Http11ErrorHandling()) // New test group for error handling (RFC7230_2_5)
-    return tg
-}
-
-## Notes:
-1. Align the test group and subgroups with the **Test Case Name** (`{{TEST_CASE_NAME}}`) and ensure compatibility with the project structure.
-2. Use subchapter-specific references (e.g., `RFC7230_2_5`) when creating or extending the test groups.
-3. filename should be in the format `RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_<CHAPTER_TITLE>.go` (e.g., RFC7230_2_architecture.go).
-
-generate the response in flowing format, use code block for the source code and filename block for the filename and test-group block for the test-group name:
+### Output Format:
+Please generate the response in the following format:
 
 ```go
 package http11
 
 import "github.com/LeaYeh/h1spec/spec"
 
+// {{PARENT_TEST_GROUP}} implements tests for RFC{{PROTOCOL_NUM}} Section {{MAJOR_SECTION}}: "<CHAPTER_TITLE>".
 func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
-	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}", "<CHAPTER_TITLE>")
-
-    // Add subchapter-level test groups without test case implementation
-    // e.g. tg.AddTestGroup(HTTP11ErrorHandling()) (format HTTP11<TEST_CASE_GROUP>)
-	tg.AddTestGroup(HTTP11<TEST_CASE_GROUP>())
-
-	return tg
+    tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}", "<CHAPTER_TITLE>")
+    // Add subchapter-level test groups
+    tg.AddTestGroup(HTTP11<TEST_CASE_GROUP>())
+    return tg
 }
 ```
 
