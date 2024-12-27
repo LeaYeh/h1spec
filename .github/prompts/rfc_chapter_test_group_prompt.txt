@@ -44,9 +44,9 @@ func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
 ```
 
 ```filename
-e.g. RFC7230_2_architecture.go
+RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_<CHAPTER_TITLE>.go
 ```
 
 ```test-group
-e.g. HTTP11HeaderHost (format HTTP11<TEST_CASE_GROUP>)
+HTTP11<TEST_CASE_GROUP>
 ```

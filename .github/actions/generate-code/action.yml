@@ -165,7 +165,9 @@ runs:
 
           const data = JSON.stringify({
             model: process.env.MODEL,
-            messages: [{"role": "user", "content": prompt}],
+            messages: [
+              {"role": "user", "content": prompt}
+            ],
           });
 
           const options = {

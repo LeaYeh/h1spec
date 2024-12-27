@@ -27,9 +27,6 @@ Project Context:
 - Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
 - Return a 'spec.TestError' for any test failures.
 
-### Output Format:
-Please generate the response in the following format:
-
 Notes:
 
 - Replace <SUBSECTION_TITLE> with the actual subsection title from the RFC.
@@ -38,6 +35,9 @@ Notes:
 - Replace <RFC_REQUIREMENT> with the specific requirement from the RFC.
 - Ensure the filename uses lowercase for the test case group name.
 - Implement the test case logic in the Run function, using the provided Sample Request, Expected Status Code, Headers, and Body.
+
+### Output Format:
+Please generate the response in the following format:
 
 ```go
 package http11
