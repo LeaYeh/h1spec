@@ -69,6 +69,7 @@ jobs:
         protocol-num: ${{ steps.parse.outputs.protocol-num }}
         major-section: ${{ steps.parse.outputs.major-section }}
         subsection: ${{ steps.parse.outputs.subsection }}
+        parent-test-group: ${{ steps.gen-protocol.outputs.generated_test_group }}
 
     - name: Generate subchapter level
       uses: ./.github/actions/generate-code
@@ -90,6 +91,7 @@ jobs:
         expected-status-code: ${{ fromJson(steps.extract.outputs.result)['expected-status-code'] }}
         expected-headers: ${{ fromJson(steps.extract.outputs.result)['expected-headers'] }}
         expected-body: ${{ fromJson(steps.extract.outputs.result)['expected-body'] }}
+        parent-test-group: ${{ steps.gen-chapter.outputs.generated_test_group }}
 
     - name: Verify code
       uses: ./.github/actions/verify-code
