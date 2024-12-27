@@ -11,18 +11,18 @@ Project Context:
 
 Please generate a Go file that implements the main RFC test group. The code should:
 
-Follow the existing code style and conventions in the h1spec project
-Create or extend the test group for the RFC protocol level
-Include appropriate comments explaining the RFC's scope and purpose
-Use the existing utility functions and structures from the project
+- Follow the existing code style and conventions in the h1spec(HTTP1.1) project
+- Create or extend the test group for the RFC protocol level
+- Include appropriate comments explaining the RFC's scope and purpose
+- Use the existing utility functions and structures from the project
+
 Requirements:
+- Create or extend the main function named 'RFC{{PROTOCOL_NUM}}' with description as 'Protocol RFC{{PROTOCOL_NUM}}'
+- Structure the code to allow for chapter-level test groups
+- Name the chapter-level test groups as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
+- Provide clear documentation
 
-Create or extend the main function named 'RFC{{PROTOCOL_NUM}}'
-Structure the code to allow for chapter-level test groups
-Name the chapter-level test groups as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
-Provide clear documentation
 Please generate the response in the following format:
-
 PROTOCOL_NUM = {{PROTOCOL_NUM}}
 CHAPTER_TITLE = <Chapter title from RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}>
 

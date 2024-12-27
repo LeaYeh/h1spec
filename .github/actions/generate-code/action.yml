@@ -54,7 +54,7 @@ outputs:
     value: ${{ steps.format.outputs.filename }}
   generated_test_group:
     description: 'Generated test group'
-    value: ${{ steps.generate.outputs.result }}
+    value: ${{ steps.format.outputs.test_group }}
 runs:
   using: 'composite'
   steps:
@@ -251,6 +251,14 @@ runs:
         fi
         echo "Extracted filename: $FILENAME"
         echo "filename=$FILENAME" >> $GITHUB_OUTPUT
+
+        TEST_GROUP=$(grep -A1 '```test-group' raw_code.txt | tail -n1 | tr -d '\r' | tr -d ' ')
+        if [ -z "$TEST_GROUP" ]; then
+          echo "Error: Could not extract test-group"
+          TEST_GROUP="None"
+        fi
+        echo "Extracted test-group: $TEST_GROUP"
+        echo "test_group=$TEST_GROUP" >> $GITHUB_OUTPUT
 
         sed -n '/```go/,/```/{/```/!p}' raw_code.txt > cleaned_code.txt
         if [ ! -s cleaned_code.txt ]; then
