@@ -72,7 +72,7 @@ runs:
             ;;
           "chapter")
             SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}.go"
-            DEFAULT_FILE="spec/http1.1/RFC7230_2.go"
+            DEFAULT_FILE="spec/http1.1/RFC7230_2_architecture.go"
             ;;
           "subchapter")
             if [ ! -z "${{ inputs.subsection }}" ]; then
@@ -80,7 +80,7 @@ runs:
             else
               SPECIFIC_FILE="spec/http1.1/RFC${{ inputs.protocol-num }}_${{ inputs.major-section }}.go"
             fi
-            DEFAULT_FILE="spec/http1.1/RFC7230_2_5.go"
+            DEFAULT_FILE="spec/http1.1/RFC7230_2_5_error_handling.go"
             ;;
         esac
 
