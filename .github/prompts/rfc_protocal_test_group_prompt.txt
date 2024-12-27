@@ -1,7 +1,7 @@
 # rfc_protocal_test_group_prompt.txt
 You are an expert HTTP/1.1 test case developer. Your task is to create or extend the main RFC test group for the h1spec project.
 
-RFC Document: RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}_{{SUBSECTION}}
+RFC Document: RFC{{PROTOCOL_NUM}}
 RFC Link: {{RFC_LINK}}
 
 Project Context:
@@ -10,36 +10,21 @@ Project Context:
 ```
 
 Please generate a Go file that implements the main RFC test group. The code should:
-1. Follow the existing code style and conventions in the h1spec project
-2. Create a new test group for the RFC protocol level
-3. Include appropriate comments explaining the RFC's scope and purpose
-4. Use the existing utility functions and structures from the project
 
+Follow the existing code style and conventions in the h1spec project
+Create or extend the test group for the RFC protocol level
+Include appropriate comments explaining the RFC's scope and purpose
+Use the existing utility functions and structures from the project
 Requirements:
-- Create a main function named 'RFC{{PROTOCOL_NUM}}' if it is not exist or base one the current `Project Context` to extern it.
-- Include all necessary import statements
-- Follow the project's naming conventions
-- Provide clear documentation
-- Structure the code to allow for chapter-level test groups
-  and name the test group by the chapter title with format HTTP11{{CHAPTER_TITLE}} (e.g. HTTP11Architecture) but the implementation will be in the futher files
 
-Please generate the code in the following format:
+Create or extend the main function named 'RFC{{PROTOCOL_NUM}}'
+Structure the code to allow for chapter-level test groups
+Name the chapter-level test groups as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
+Provide clear documentation
+Please generate the response in the following format:
 
-```go
-package http11
-
-import "github.com/LeaYeh/h1spec/spec"
-
-func RFC7230() *spec.TestGroup {
-	tg := NewTestGroup("RFC7230", "Protocol RFC7230")
-
-	tg.AddTestGroup(HTTP11Architecture())
-
-	return tg
-}
-```
-
-generate the response in flowing format, use code block for the source code and filename block for the filename and test-group block for the test-group name:
+PROTOCOL_NUM = {{PROTOCOL_NUM}}
+CHAPTER_TITLE = <Chapter title from RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}>
 
 ```go
 package http11
@@ -47,21 +32,20 @@ package http11
 import "github.com/LeaYeh/h1spec/spec"
 
 func RFC{{PROTOCOL_NUM}}() *spec.TestGroup {
-	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}_{{MAJOR_SECTION}}", "Protocol RFC{{PROTOCOL_NUM}}")
+	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}", "Protocol RFC{{PROTOCOL_NUM}}")
 
 	// Add chapter-level test groups
 	// Reference Implementation will be in the future files
+	tg.AddTestGroup(HTTP11{{CHAPTER_TITLE}}())
 
 	return tg
 }
 ```
 
-PROTOCOL_NUM = {{PROTOCOL_NUM}}
 ```filename
-e.g. RFC7230.go (format RFC<PROTOCOL_NUM>.go)
+RFC{{PROTOCOL_NUM}}.go
 ```
 
-CHAPTER_TITLE = {{CHAPTER_TITLE}}
 ```test-group
-e.g. HTTP11Architecture (format HTTP11<CHAPTER_TITLE>)
+HTTP11{{CHAPTER_TITLE}}
 ```
