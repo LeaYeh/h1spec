@@ -168,6 +168,8 @@ runs:
             messages: [
               {"role": "user", "content": prompt}
             ],
+            "temperature": 0,
+            "top_p": 1
           });
 
           const options = {
