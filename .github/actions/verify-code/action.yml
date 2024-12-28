@@ -1,9 +1,12 @@
 name: 'Verify the generated code is compilable'
 description: 'Verifies the generated code is compilable and executable'
 outputs:
-  result:
-    description: 'The verification result'
-    value: ${{ steps.verify.outputs.result }}
+  compile_status:
+    description: 'Compilation status'
+    value: ${{ steps.verify.outputs.compile_status }}
+  compile_error:
+    description: 'Compilation error message'
+    value: ${{ steps.verify.outputs.compile_error }}
 runs:
   using: 'composite'
   steps:
@@ -20,9 +23,18 @@ runs:
     - name: Verify compilation
       id: verify
       run: |
-        set -e
-        # Attempt to build the code
-        go build ./spec/http1.1 && echo "Compilation successful!" || (echo "Compilation failed!" && exit 1)
-        echo "Compilation successful!"
-        echo "result=success" >> $GITHUB_OUTPUT
+        set +e  # Don't exit immediately on error
+        OUTPUT=$(go build ./spec/http1.1 2>&1)
+        EXIT_CODE=$?
+        if [ $EXIT_CODE -eq 0 ]; then
+          echo "Compilation successful!"
+          echo "compile_status=success" >> $GITHUB_OUTPUT
+          echo "compile_error=" >> $GITHUB_OUTPUT
+        else
+          echo "Compilation failed!"
+          echo "compile_status=failure" >> $GITHUB_OUTPUT
+          echo "compile_error<<EOF" >> $GITHUB_OUTPUT
+          echo "$OUTPUT" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+        fi
       shell: bash

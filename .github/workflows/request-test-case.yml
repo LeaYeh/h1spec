@@ -12,7 +12,7 @@ jobs:
     - name: Check if user is authorized
       uses: ./.github/actions/check-auth
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.H1SPEC_BOT }}
         authorized-users: ${{ secrets.AUTHORIZED_USERS }}
         user-login: ${{ github.event.issue.user.login }}
 
@@ -20,7 +20,7 @@ jobs:
       uses: ./.github/actions/extract-issue
       id: extract
       with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
+        github-token: ${{ secrets.H1SPEC_BOT }}
         issue-number: ${{ github.event.issue.number }}
 
     - name: Extract RFC section
@@ -97,16 +97,16 @@ jobs:
       uses: ./.github/actions/verify-code
       id: verify
 
-    - name: Set up tmate session
-      if: failure()
-      uses: mxschmitt/action-tmate@v3
-      timeout-minutes: 5
+    # - name: Set up tmate session
+    #   if: failure()
+    #   uses: mxschmitt/action-tmate@v3
+    #   timeout-minutes: 5
 
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
       with:
         token: ${{ secrets.H1SPEC_BOT }}
-        commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Unknown Test Case' }}"
+        commit-message: "feat: feat: Add new test case  ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Unknown Test Case' }}"
         title: "New test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}"
         body: |
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
@@ -116,21 +116,25 @@ jobs:
           - RFC Section: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-section'] || 'Unknown' }}
           - Test Case Name: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}
           - Mode: ${{ fromJson(steps.extract.outputs.result || '{}')['mode'] || 'Unknown' }}
-    
-          ChatGPT Generation Details:
-          - Response ID: ${{ fromJson(steps.generate.outputs.result || '{}').id || 'N/A' }}
-          - Object: ${{ fromJson(steps.generate.outputs.result || '{}').object || 'N/A' }}
-          - Created Timestamp: ${{ fromJson(steps.generate.outputs.result || '{}').created || 'N/A' }}
-          - Model Used: ${{ fromJson(steps.generate.outputs.result || '{}').model || 'Unknown' }}
+          - Sample Request: ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
+          - Expected Status Code: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
+          - Expected Headers: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
+          - Expected Body: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-body'] || 'Unknown' }}
     
           Compilation Status: ${{ steps.verify.outputs.compile_status == 'success' && '✅ Code compiles successfully' || '❌ Compilation failed' }}
           ${{ steps.verify.outputs.compile_error && format('```\n{0}\n```', steps.verify.outputs.compile_error) }}
     
-          Generated test case has been added to: `${{ steps.verify.outputs.filepath || 'Unknown' }}`
-          Please review and adjust as necessary.
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
+        add-paths: |
+          spec/http1.1/*.go
+          spec/http1.1/**/*.go
         reviewers: |
           ${{ github.repository_owner }}
           ${{ github.event.issue.user.login }}
-    
+        assignees: |
+          ${{ github.event.issue.user.login }}
+          ${{ github.repository_owner }}
+        labels: |
+          test-case
+          ${{ fromJson(steps.extract.outputs.result || '{}')['mode'] || 'Unknown' }}

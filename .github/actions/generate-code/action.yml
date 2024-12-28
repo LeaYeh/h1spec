@@ -274,6 +274,7 @@ runs:
         cat cleaned_code.txt
 
         mv cleaned_code.txt "spec/http1.1/$FILENAME"
+        rm raw_code.txt
         echo "Generated file: spec/http1.1/$FILENAME"
         echo "Final file contents:"
         cat "spec/http1.1/$FILENAME"
