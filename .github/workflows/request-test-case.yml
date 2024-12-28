@@ -105,7 +105,7 @@ jobs:
     - name: Create pull request
       uses: peter-evans/create-pull-request@v3
       with:
-        token: ${{ secrets.GITHUB_TOKEN }}
+        token: ${{ secrets.H1SPEC_BOT }}
         commit-message: "Add new test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Unknown Test Case' }}"
         title: "New test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}"
         body: |
