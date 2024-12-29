@@ -2,10 +2,13 @@ name: 'Check Authorized User'
 description: 'Verifies if the user is authorized to trigger the workflow'
 inputs:
   github-token:
+    description: 'GitHub token for authentication'
     required: true
   authorized-users:
+    description: 'Comma-separated list of authorized GitHub usernames'
     required: true
   user-login:
+    description: 'GitHub username to check'
     required: true
 runs:
   using: 'composite'
@@ -13,8 +16,12 @@ runs:
     - name: Check authorized user
       shell: bash
       run: |
-        if [[ ! ${{ inputs.authorized-users }} =~ ${{ inputs.user-login }} ]]; then
-          echo "User ${{ inputs.user-login }} is not authorized"
-          exit 1
-        fi
-        echo "User ${{ inputs.user-login }} is authorized"
+        IFS=',' read -ra AUTH_USERS <<< "${{ inputs.authorized-users }}"
+        for user in "${AUTH_USERS[@]}"; do
+          if [[ "$user" == "${{ inputs.user-login }}" ]]; then
+            echo "User ${{ inputs.user-login }} is authorized"
+            exit 0
+          fi
+        done
+        echo "User ${{ inputs.user-login }} is not authorized"
+        exit 1
