@@ -26,6 +26,8 @@ Project Context:
 - Include clear comments explaining the test case and its behavior.
 - Use 'c *config.Config' and 'conn *spec.Conn' as parameters for the Run function.
 - Return a 'spec.TestError' for any test failures.
+- Use the following format for expected status:
+    expected := []string{spec.StatusString(1.1, <EXPECTED_STATUS_CODE>, "\r")}
 - Need to output with 3 code blocks: go, filename, and test-group. Even if the test group is empty.
 
 Notes:
