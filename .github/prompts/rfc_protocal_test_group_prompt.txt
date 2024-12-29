@@ -18,8 +18,10 @@ Please generate a Go file that implements the main RFC test group. The code shou
 
 Requirements:
 - Create or extend the main function named 'RFC{{PROTOCOL_NUM}}' with description as 'Protocol RFC{{PROTOCOL_NUM}}'
-- Structure the code to allow for chapter-level test groups
-- Name the chapter-level test groups as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
+	- If extending, add a new chapter-level test group based on the chapter title
+	- Otherwise, create the main function named 'RFC{{PROTOCOL_NUM}}' with the chapter-level test group
+- Structure the code to allow for chapter-level test group
+- Name the chapter-level test group as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
 - Provide clear documentation
 
 Please generate the response in the following format:
@@ -34,7 +36,7 @@ import "github.com/LeaYeh/h1spec/spec"
 func RFC{{PROTOCOL_NUM}}() *spec.TestGroup {
 	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}", "Protocol RFC{{PROTOCOL_NUM}}")
 
-	// Add chapter-level test groups
+	// Add chapter-level test group
 	// Reference Implementation will be in the future files
 	tg.AddTestGroup(HTTP11{{CHAPTER_TITLE}}())
 
