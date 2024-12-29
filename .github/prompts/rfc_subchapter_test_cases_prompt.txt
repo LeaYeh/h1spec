@@ -34,7 +34,6 @@ Notes:
 - Replace <STRICTNESS> with true for MUST, and false for SHOULD or MAY.
 - Replace <TEST_CASE_DESCRIPTION> with the provided Test Case Description.
 - Replace <RFC_REQUIREMENT> with the specific requirement from the RFC.
-- Ensure the filename uses lowercase for the test case group name.
 - Implement the test case logic in the Run function, using the provided Sample Request, Expected Status Code, Headers, and Body.
 
 ### Output Format:
