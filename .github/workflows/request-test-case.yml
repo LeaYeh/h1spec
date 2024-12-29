@@ -116,10 +116,19 @@ jobs:
           - RFC Section: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-section'] || 'Unknown' }}
           - Test Case Name: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}
           - Mode: ${{ fromJson(steps.extract.outputs.result || '{}')['mode'] || 'Unknown' }}
-          - Sample Request: ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
+          - Sample Request: 
+            ```
+            ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
+            ```
           - Expected Status Code: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
-          - Expected Headers: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
-          - Expected Body: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-body'] || 'Unknown' }}
+          - Expected Headers:
+            ```
+            ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
+            ```
+          - Expected Body: 
+            ```
+            ${{ fromJson(steps.extract.outputs.result || '{}')['expected-body'] || 'Unknown' }}
+            ```
     
           Compilation Status: ${{ steps.verify.outputs.compile_status == 'success' && '✅ Code compiles successfully' || '❌ Compilation failed' }}
           ${{ steps.verify.outputs.compile_error && format('```\n{0}\n```', steps.verify.outputs.compile_error) }}
