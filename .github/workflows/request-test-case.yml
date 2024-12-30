@@ -110,6 +110,9 @@ jobs:
         title: "New test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}"
         body: |
           Resolves #${{ github.event.issue.number }}
+
+          ----
+
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
 
           Test Case Details:
@@ -121,7 +124,10 @@ jobs:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
             ```
-          - Expected Status Code: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
+          - Expected Status Code:
+            ```
+            ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
+            ```
           - Expected Headers:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
