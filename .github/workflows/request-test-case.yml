@@ -124,10 +124,7 @@ jobs:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
             ```
-          - Expected Status Code:
-            ```
-            ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
-            ```
+          - Expected Status Code: ${{ fromJson(steps.extract.outputs.result || '{}')['expected-status-code'] || 'Unknown' }}
           - Expected Headers:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
