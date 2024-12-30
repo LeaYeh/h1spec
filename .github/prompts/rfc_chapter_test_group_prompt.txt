@@ -7,7 +7,7 @@ You are an expert in HTTP/1.1 test case development. Your task is to create or e
 - RFC Link: {{RFC_LINK}}
 - Test Case Name: {{TEST_CASE_NAME}}
 - Parent Test Group: {{PARENT_TEST_GROUP}}
-- **Project Context**:  
+- **Project Context**:
 {{REFERENCE_CODE}}
 
 Task:
@@ -37,7 +37,8 @@ import "github.com/LeaYeh/h1spec/spec"
 // {{PARENT_TEST_GROUP}} implements tests for RFC{{PROTOCOL_NUM}} Section {{MAJOR_SECTION}}: "<CHAPTER_TITLE>".
 func {{PARENT_TEST_GROUP}}() *spec.TestGroup {
     tg := NewTestGroup("RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}", "<CHAPTER_TITLE>")
-    // Add subchapter-level test groups
+    // Add subchapter-level test groups and DO NOT implement the HTTP11<TEST_CASE_GROUP> in this file
+    // Reference Implementation will be in the future files
     tg.AddTestGroup(HTTP11<TEST_CASE_GROUP>())
     return tg
 }

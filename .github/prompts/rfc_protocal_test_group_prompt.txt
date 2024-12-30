@@ -18,7 +18,7 @@ Please generate a Go file that implements the main RFC test group. The code shou
 
 Requirements:
 - Create or extend the main function named 'RFC{{PROTOCOL_NUM}}' with description as 'Protocol RFC{{PROTOCOL_NUM}}'
-	- If extending, add a new chapter-level test group based on the chapter title
+	- If extending, add a new chapter-level test group based on the chapter title and DO NOT remove any line only extend it!
 	- Otherwise, create the main function named 'RFC{{PROTOCOL_NUM}}' with the chapter-level test group
 - Structure the code to allow for chapter-level test group
 - Name the chapter-level test group as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
