@@ -109,14 +109,15 @@ jobs:
         commit-message: "feat: feat: Add new test case  ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Unknown Test Case' }}"
         title: "New test case: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}"
         body: |
+          Resolves #${{ github.event.issue.number }}
           This PR adds a new test case as requested in issue #${{ github.event.issue.number }}.
-    
+
           Test Case Details:
           - RFC Document: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-document'] || 'Unknown' }}
           - RFC Section: ${{ fromJson(steps.extract.outputs.result || '{}')['rfc-section'] || 'Unknown' }}
           - Test Case Name: ${{ fromJson(steps.extract.outputs.result || '{}')['test-case-name'] || 'Untitled' }}
           - Mode: ${{ fromJson(steps.extract.outputs.result || '{}')['mode'] || 'Unknown' }}
-          - Sample Request: 
+          - Sample Request:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['sample-request'] || 'Unknown' }}
             ```
@@ -125,14 +126,14 @@ jobs:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['expected-headers'] || 'Unknown' }}
             ```
-          - Expected Body: 
+          - Expected Body:
             ```
             ${{ fromJson(steps.extract.outputs.result || '{}')['expected-body'] || 'Unknown' }}
             ```
-    
+
           Compilation Status: ${{ steps.verify.outputs.compile_status == 'success' && '✅ Code compiles successfully' || '❌ Compilation failed' }}
           ${{ steps.verify.outputs.compile_error && format('```\n{0}\n```', steps.verify.outputs.compile_error) }}
-    
+
         branch: "test-case-${{ github.event.issue.number }}"
         base: main
         add-paths: |
