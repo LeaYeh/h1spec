@@ -9,23 +9,42 @@ Project Context:
 {{REFERENCE_CODE}}
 ```
 
-Please generate a Go file that implements the main RFC test group. The code should:
+Important Note:
+- If Project Context contains existing code, you MUST preserve ALL existing lines and ONLY ADD new test groups
+- DO NOT remove or modify any existing test groups
 
+Please generate a Go file that implements the main RFC test group. The code should:
 - Follow the existing code style and conventions in the h1spec(HTTP1.1) project
 - Create or extend the test group for the RFC protocol level
 - Include appropriate comments explaining the RFC's scope and purpose
 - Use the existing utility functions and structures from the project
 
 Requirements:
-- Take refernece from `Project Context`
-	- If Project Context is not empty, add a new chapter-level test group based on the chapter title and DO NOT remove any line only extend it!
-	- Otherwise, create the main function named 'RFC{{PROTOCOL_NUM}}' with the chapter-level test group
-- Structure the code to allow for chapter-level test group
-- Name the chapter-level test group as HTTP11{{CHAPTER_TITLE}}, where CHAPTER_TITLE is the title of the chapter (e.g., Architecture for RFC7230.2)
-- Provide clear documentation
+- Code Generation Rules:
+	- If Project Context is NOT empty:
+		- Keep ALL existing test groups
+		- Add the new chapter-level test group AFTER existing ones
+	- If Project Context is empty:
+		- Create new RFC{{PROTOCOL_NUM}} function with the chapter-level test group
+- Naming Conventions:
+	- Main function name: RFC{{PROTOCOL_NUM}}
+	- Chapter-level test group name: HTTP11{{CHAPTER_TITLE}}
+	- Example: HTTP11Architecture for RFC7230.2
+- Documentation:
+	- Add clear comments for each test group
+	- Include section references from RFC
+
+Example of extending existing code:
+```go
+// Original:
+tg.AddTestGroup(HTTP11Architecture())
+
+// Correct extension:
+tg.AddTestGroup(HTTP11Architecture())    // Keep existing
+tg.AddTestGroup(HTTP11NewChapter())      // Add new
+```
 
 Please generate the response in the following format:
-Take refernece from the `Project Context`
 PROTOCOL_NUM = {{PROTOCOL_NUM}}
 CHAPTER_TITLE = <Chapter title from RFC{{PROTOCOL_NUM}}.{{MAJOR_SECTION}}>
 
@@ -36,6 +55,9 @@ import "github.com/LeaYeh/h1spec/spec"
 
 func RFC{{PROTOCOL_NUM}}() *spec.TestGroup {
 	tg := NewTestGroup("RFC{{PROTOCOL_NUM}}", "Protocol RFC{{PROTOCOL_NUM}}")
+
+	// IMPORTANT: Preserve existing test groups
+    {{EXISTING_TEST_GROUPS}}
 
 	// Add chapter-level test group
 	// Reference Implementation will be in the future files
