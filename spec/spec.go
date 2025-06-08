@@ -11,6 +11,7 @@ import (
 
 	"github.com/LeaYeh/h1spec/config"
 	"github.com/LeaYeh/h1spec/log"
+	"github.com/LeaYeh/h1spec/report"
 )
 
 var (
@@ -70,7 +71,7 @@ func (tg *TestGroup) Level() int {
 }
 
 // Test runs all the tests included in this group.
-func (tg *TestGroup) Test(c *config.Config) {
+func (tg *TestGroup) Test(c *config.Config, rep report.Reporter) {
 	level := tg.Level()
 
 	if tg.Strict && !c.Strict {
@@ -92,7 +93,7 @@ func (tg *TestGroup) Test(c *config.Config) {
 	for i, tc := range tests {
 		seq := i + 1
 
-		err := tc.Test(c, seq)
+		err := tc.Test(c, seq, rep)
 		if err != nil {
 			fmt.Printf("\nError: %v\n", err)
 			os.Exit(1)
@@ -116,7 +117,7 @@ func (tg *TestGroup) Test(c *config.Config) {
 	}
 
 	for _, g := range tg.Groups {
-		g.Test(c)
+		g.Test(c, rep)
 		tg.FailedCount += g.FailedCount
 		tg.SkippedCount += g.SkippedCount
 		tg.PassedCount += g.PassedCount
@@ -143,8 +144,16 @@ func (tg *TestGroup) AddTestCase(tc *TestCase) {
 	}
 }
 
+func errorMsgString(err error) string {
+    if err == nil {
+        return ""
+    }
+    return err.Error()
+}
+
 // TestCase represents a test case.
 type TestCase struct {
+	Key         string // Unique identifier for the test case to testifyio
 	Desc        string
 	Requirement string
 	Strict      bool
@@ -154,7 +163,7 @@ type TestCase struct {
 }
 
 // Test runs itself as a test case.
-func (tc *TestCase) Test(c *config.Config, seq int) error {
+func (tc *TestCase) Test(c *config.Config, seq int, rep report.Reporter) error {
 	if tc.Strict && !c.Strict {
 		return nil
 	}
@@ -197,6 +206,15 @@ func (tc *TestCase) Test(c *config.Config, seq int) error {
 	tr := NewTestResult(tc, seq, err, end.Sub(start), conn.LocalAddr())
 	tr.Print()
 	tc.Result = tr
+
+	if rep != nil {
+        rep.CaseDone(report.Result{
+            Title:    tc.Key,
+            Passed:   !tr.Failed && !tr.Skipped,
+            Duration: tr.Duration.Milliseconds(),
+            Message:  errorMsgString(tr.Error),
+        })
+    }
 
 	return nil
 }

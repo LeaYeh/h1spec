@@ -5,12 +5,13 @@ import (
 	"time"
 
 	"github.com/LeaYeh/h1spec/config"
+	"github.com/LeaYeh/h1spec/report"
 	"github.com/LeaYeh/h1spec/log"
 	"github.com/LeaYeh/h1spec/spec"
 	"github.com/LeaYeh/h1spec/spec/http1.1"
 )
 
-func Run(c *config.Config) (bool, error) {
+func Run(c *config.Config, rep report.Reporter) (bool, error) {
 	total := 0
 	success := true
 
@@ -20,7 +21,7 @@ func Run(c *config.Config) (bool, error) {
 
 	start := time.Now()
 	for _, s := range specs {
-		s.Test(c)
+		s.Test(c, rep)
 
 		if s.FailedCount > 0 {
 			success = false

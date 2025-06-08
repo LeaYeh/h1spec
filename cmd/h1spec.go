@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/LeaYeh/h1spec"
 	"github.com/LeaYeh/h1spec/config"
+	"github.com/LeaYeh/h1spec/report"
 )
 
 var (
@@ -122,7 +123,18 @@ func run(cmd *cobra.Command, args []string) error {
 		Sections:     args,
 	}
 
-	success, err := h1spec.Run(c)
+	testinyAPIKey := os.Getenv("TESTINY_API_KEY")
+	reporter, err := report.NewTestinyReporter(testinyAPIKey)
+	if err != nil {
+		if testinyAPIKey != "" {
+			fmt.Printf("Error initializing Testiny reporter: %s\n", err)
+		} else {
+			fmt.Println("No TESTINY_API_KEY found, please set the environment variable to enable reporting to Testiny.")
+		}
+		os.Exit(1)
+	}
+	reporter.StartRun()
+	success, err := h1spec.Run(c, reporter)
 	if !success {
 		os.Exit(1)
 	}
